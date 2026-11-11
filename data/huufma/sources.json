@@ -1,0 +1,62 @@
+[
+  {
+    "file": "internacoes.xlsx",
+    "url": "https://www.gov.br/hubrasil/pt-br/hospitais-universitarios/regiao-nordeste/hu-ufma/acesso-a-informacao/STCOR___Quantidade_de_Internacoes.xlsx",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "file": "permanencia.xlsx",
+    "url": "https://www.gov.br/hubrasil/pt-br/hospitais-universitarios/regiao-nordeste/hu-ufma/acesso-a-informacao/Media_de_Permanancia_Hospitalar_Geral.xlsx",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "file": "cnes_leitos.html",
+    "url": "https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VCo_Unidade=2111302726653",
+    "final_url": "https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VCo_Unidade=2111302726653",
+    "bytes": 36272,
+    "sha256": "5fb4796bce4f125c5b3955667ba7bff21e5bbba6d565061e435daa0dd3679db9",
+    "retrieved_at": "2026-11-11T07:22:55.877429+00:00"
+  },
+  {
+    "file": "sih_catalogo.html",
+    "url": "https://datasus.saude.gov.br/acesso-a-informacao/producao-hospitalar-sih-sus/",
+    "error": "The read operation timed out"
+  },
+  {
+    "file": "cnes_202412.html",
+    "url": "https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VComp=202412&VUnidade=2111302726653",
+    "final_url": "https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VComp=202412&VUnidade=2111302726653",
+    "bytes": 34227,
+    "sha256": "6ba0b9210e9efe66d0edd3ef5ddd67b5dbb5fe6bd0310186e92fb469b14cb10d",
+    "retrieved_at": "2026-11-11T07:23:52.713465+00:00"
+  },
+  {
+    "file": "RDMA2412.dbc",
+    "url": "https://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/RDMA2412.dbc",
+    "error": "<urlopen error timed out>"
+  },
+  {
+    "file": "frej2023_crossref.json",
+    "url": "https://api.crossref.org/works/10.3390/math11030659",
+    "final_url": "https://api.crossref.org/works/10.3390/math11030659",
+    "bytes": 18046,
+    "sha256": "270ade423f9fe10c372e7abaa517656b6355917e08c38a1d1c51c35185869d37",
+    "retrieved_at": "2026-11-11T07:23:53.021648+00:00"
+  },
+  {
+    "file": "sih_review_crossref.json",
+    "url": "https://api.crossref.org/works/10.1590/S0102-311X2006000100003",
+    "final_url": "https://api.crossref.org/works/10.1590/S0102-311X2006000100003",
+    "bytes": 29081,
+    "sha256": "82fe474c86c24cad9fbd722b1ffe5a20c536e9e187ba5276dbf3d4025db107e5",
+    "retrieved_at": "2026-11-11T07:23:53.015978+00:00"
+  },
+  {
+    "file": "data_quality_crossref.json",
+    "url": "https://api.crossref.org/works/10.1590/1980-5497201600030008",
+    "final_url": "https://api.crossref.org/works/10.1590/1980-5497201600030008",
+    "bytes": 10520,
+    "sha256": "61e0b438012fce655df26d67d13de83c2e109a23cd5ad9901e746240729b1711",
+    "retrieved_at": "2026-11-11T07:23:52.916981+00:00"
+  }
+]

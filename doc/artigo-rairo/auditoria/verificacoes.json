@@ -1,0 +1,24 @@
+{
+  "escores_fora_do_intervalo_probabilistico": {
+    "prob_uti": 5,
+    "prob_fora": 4
+  },
+  "crianca_aceita_leito_adulto": [
+    1,
+    2
+  ],
+  "msf_manuscrito_prefere_nao_admitir_neste_exemplo": {
+    "0": -0.6400000000000001,
+    "1": 0.8600000000000001
+  },
+  "coluna_gravidade_ausente_no_resultado": [
+    "Paciente",
+    "Tipo",
+    "Prob. UTI",
+    "Prob. Fora",
+    "Alocado em",
+    "Status"
+  ],
+  "simulador_monte_carlo_vazio_na_base_auditada": true,
+  "simulador_atual_bytes": 168
+}

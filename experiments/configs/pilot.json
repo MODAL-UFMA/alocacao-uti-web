@@ -1,0 +1,16 @@
+{
+  "seed": 20251107,
+  "replications": 100,
+  "capacities": {"neonatal": 5, "pediatric": 10, "adult": 15},
+  "type_weights": {"neonatal": 1, "pediatric": 2, "adult": 3},
+  "demand_ratios": [0.5, 1.0, 2.0],
+  "p_out_range": [0.05, 0.65],
+  "gain_fraction_range": [0.1, 0.8],
+  "targets": {"global": 0.8, "neonatal": 0.8, "pediatric": 0.8, "adult": 0.8},
+  "penalties": [
+    {"id": "none", "mode": "none", "weight": 0, "power": 2},
+    {"id": "global_quadratic_m10", "mode": "global", "weight": 10, "power": 2},
+    {"id": "per_type_quadratic_m10", "mode": "per_type", "weight": 10, "power": 2},
+    {"id": "global_absolute_m10", "mode": "global", "weight": 10, "power": 1}
+  ]
+}

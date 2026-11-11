@@ -1,0 +1,424 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a template file for RO 
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article
+%
+%%%%%%%%%%%%%%%%%%%%%%%%   EDP Sciences  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\documentclass{ro}
+%
+%%%%%%%%%%%%%--PREAMBLE--%%%%%%%%%%%%%%%%%%
+%%-----------------------------
+%
+
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+%\usepackage{multicol}
+%\usepackage{subfigure}
+%\usepackage{cite}
+%\usepackage[authoryear]{natbib}
+\usepackage{mathtools}
+\usepackage{url}
+%\usepackage{xcolor}
+\usepackage{enumerate}
+\usepackage{color}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\usepackage{lineno}
+\linenumbers
+
+
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+%\usepackage{latexsym}
+% etc.
+%
+% please place your own definitions here and don't use \def but
+% \newcommand{}{}
+%
+% Insert the name of "your journal" with
+%
+
+%\allowdisplaybreaks
+
+%         your macros
+%         ...........
+%%-------------------------%%----
+%%%%%%%%%%%%%%%--BODY--%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+%%-----------------------------
+%%      the top matter
+%%-----------------------------
+\title{A branch-and-cut and MIP-based heuristics for the Prize-Collecting Travelling Salesman Problem}% At most 5 thanks
+%
+\author{Glaubos Cl\'imaco*}\address{Universidade Federal do Rio de Janeiro, PESC-COPPE, Cidade Universit\'aria, Centro de Tecnologia, Bloco H, 21941-972, Rio de Janeiro, Brasil.}\thanks{Corresponding author: glaubos@cos.ufrj.br}
+\author{Luidi Simonetti}\address{Universidade Federal do Rio de Janeiro, PESC-COPPE, Cidade Universit\'aria, Centro de Tecnologia, Bloco H, 21941-972, Rio de Janeiro, Brasil.}
+\author{Isabel Rosseti}\address{ Universidade Federal Fluminense, Instituto de Computa\c{c}\~ao. Rua Passo da P\'atria 156 S\~ao Domingos 24210-240 - Niter\'oi, RJ - Brasil}
+%
+\date{...}
+%
+\begin{abstract} 
+
+The Prize Collecting Traveling Salesman Problem
+(PCTSP) \textcolor{red}{represents} a generalization of the well-known Traveling Salesman Problem. The PCTSP can be associated with a salesman that collects a prize in each visited city and pays a penalty for each unvisited city, with travel costs among the cities. The
+objective is to minimize the sum of the costs of the tour
+and penalties, while collects a minimum amount of prize.
+This paper \textcolor{red}{suggests} MIP-based heuristics and a branch-and-cut algorithm to solve the PCTSP. Experiments were conducted \textcolor{red}{with instances} of the literature, and the results of \textcolor{red}{our methods turned out to be quite satisfactory}.
+
+ \end{abstract}
+%
+
+%we evaluate our methods with instances of the literature with very satisfactory results.
+
+\subjclass{???, ???}
+%
+\keywords{prize-collecting traveling salesman problem,  MIP heuristics, branch-and-cut}
+%
+\maketitle
+%%-----------------------------
+%%      your text
+%%-----------------------------
+\section{Introduction}
+
+The prize-collecting traveling salesman problem (PCTSP) is a variant of the well-known traveling salesman problem (TSP), and so an NP-hard problem. \textcolor{red}{In the PCTSP,  a salesman collects a prize $p_i$ in each city visited and pays a penalty $w_i$ for each city not visited, considering travel
+costs $c_{ij}$ between the cities. The objective function is to minimize the sum of travel
+costs and penalties paid, while including in the tour enough cities to collect a 
+minimum prize $p_{min}$. In this tour, each city can be visited at most one time.}  Figure \ref{fig:solution} \textcolor{red}{illustrates a PCTSP solution containing seven vertices, and for visual purposes, consider a Euclidean distance between the vertices.}
+
+
+
+
+
+
+%The PCTSP \textcolor{red}{consists of determining} a tour visiting, at most once, each vertex $i$ associated with a prize $p_i$ in the graph; and if a vertex is left unroute\textcolor{red}{d,} a given penalty $w_i$ is applied. 
+%The objective function is to minimize the cost of the tour plus penalties, while collecting a minimum prize $p_{min}$. Figure \ref{fig:solution} \textcolor{red}{illustrates a PCTSP solution containing seven vertices}.
+
+
+\begin{figure}[!h]
+	\centering
+	\label{fig:solution}
+	\includegraphics*[width=7cm]{pctsp.png}
+		\caption{\textcolor{red}{A PCTSP solution with seven vertices.}}
+\end{figure}
+
+The PCTSP was initially formulated by Balas \cite{Balas89} as a model for scheduling the daily operations of a steel rolling mill, and  since then has been studied by several researchers to solve problems such as, the helicopter tour planning for offshore oil platforms, and the design of tourist
+routes \cite{balas2007prize}. Several authors proposed different approaches to tackle PCTSP. \textcolor{red}{Fischetti and Toth} \cite{fischetti1988additive} presented some bounding procedures, as well as a branch-and-bound algorithm, and applied it to instances up to 200 nodes.
+
+Bienstock et al. \cite{bienstock1993note} devised  a new  formulation for PCTSP which uses cut-set constraints for sub-cycle eliminations in the route. \textcolor{red}{Bienstock et al. \cite{bienstock1993note}} equally developed an approximation algorithm with constant bound that combines a linear relaxation, with the  Christofides  algorithm \cite{goodrich2015christofides}, widely used for resolution of the TSP. 
+
+Dell'Amico et al. \cite{dell1998lagrangian} presented a Lagrangian heuristic \textcolor{red}{to obtain an upper bound, by relaxing the minimum prize constraint,  dualizing it in a Lagrangian way, and then applying the sub-gradient method.} Awerbuch \textit{et al.} \cite{awerbuch1998new} elaborated an algorithm of complexity ($log_2n$) for the Quota TSP. \textcolor{red}{This last problem is similar to the PCTSP, with the only difference being that it does not consider penalties for} \textcolor{red}{unvisited cities}. Therefore, with some transformations, the algorithm proposed by these authors also includes the PCTSP. Torres et al.\cite{torres2003problemas} proposed GRASP \cite{resende2016optimization} heuristics for the orienteering problem (OP) and the PCTSP, and a new formulation for the PCTSP, based on flow constraints for the sub-cycle elimination. 
+
+Chaves et al. \cite{chaves2005hybrid} proposed: i) a new mathematical formulation by combining both models of  Torres \textit{et al.} \cite{torres2003problemas} and Balas \cite{Balas89}; and ii)  \textcolor{red}{two heuristics   based on clustering search to solve the PCTSP}. These heuristics are  similar, and its main difference is how initial solutions are built. The first heuristic generates solutions making use of an evolutionary process (ECS), while the second one creates initial solutions employing a GRASP heuristic associated with a VNS/VND \cite{mladenovic12} method (CS*). 
+
+Lastly, to the best of our knowledge, the last work addressing the PCTSP was carried out by Pedro \textit{et al.} \cite{pedro2013tabu}, in which the authors \textcolor{red}{proposed a solution through a Tabu Search (TS) \cite{laguna2018tabu}}, which incorporates the GENIUS \cite{genius} heuristic to its construction phase, and a 2-opt local search.
+
+\textcolor{red}{
+The  scientific contributions of this work can be summarized as: a branch-and-cut algorithm, which has obtained unknown optimal solutions so far; and two new MIP-based heuristics. The remainder of this paper is organized as follows. In Section \ref{sec:mf} an integer linear programming (ILP) formulation of Bienstock \textit{et al.}\cite{bienstock1993note} is described. In Sections \ref{sec:bc} and \ref{sec:mip}, the proposed approaches are presented. In Section \ref{sec:results}, some numerical results are exhibited to evaluate our proposals. Lastly, in Section \ref{sec:conclusions}, some conclusions and subsequent investigations are drawn.
+}
+
+\section{Mathematical formulation}
+\label{sec:mf}
+
+
+
+
+In this section we present the mathematical formulation of Bienstock \textit{et al.} \cite{bienstock1993note}. 
+Let $G = (V, E)$ be a complete and undirected graph, in which $V$ and $E$ are the sets of vertices and edges, respectively. Associated with each \textcolor{red}{edge $e = (i, j) \in E$} there is a cost $c_e$ satisfying the triangle inequality, and for each vertex $i \in V$ there is a non-negative penalty $w_i$ and a prize $p_i$.
+
+ The formulation requires the binaries variables $x_{ij}=1$ if edge $(i, j) \in E $
+is part of the tour; or $x_{ij}=0$, otherwise; and  $y_i =  1,$ if vertex  $i \in V$ is visited, and $y_i=0$  otherwise. \textcolor{red}{We also define $\delta(S) = \{ (i,j) \in E \ | \ i \in S, j \in V \setminus S \}$, $\delta(i)$ as a set of all incidents edges to the vertex $i$, and a root vertex $u$. Hence, the PCTSP can be formulated as follows:}
+
+%{\small
+	\begin{align}
+(P_1) \qquad	Min \quad  & \sum_{e \in E} c_e x_e + \sum_{i \in V} w_i (1 - y_i)  \label{naodir1}\\
+	\text{subject to:}
+	&\sum_{e \in \delta(i)} x_e = 2 y_i,  \qquad \qquad \forall i \in V\label{naodir2}\\
+	&\sum_{i \in V}p_iy_i \geq p_{min} \label{naodir3}\\
+	&\sum_{e \in \delta(S)} x_e \geq 2 \textcolor{red}{y_i}, \qquad  \qquad \forall (S \subset V \setminus \{u\}, i \in S) \label{naodir4}\\
+	&y_i \in \{0,1\}, \qquad \qquad \qquad \forall i \in V \label{naodir5}\\
+	&x_e \in \{0,1\}, \qquad \qquad \qquad \forall e \in E \label{naodir6} 
+	\end{align}
+%}
+
+The objective function (\ref{naodir1}) aims to minimize the sum of travel costs and penalties. The degree constraints (\ref{naodir2}) ensure that a
+feasible solution goes exactly once through each visited vertex. \textcolor{red}{Constraint (\ref{naodir3}) imposes} a minimum bound on the collected prize. The cut-set constraints (\ref{naodir4}) ensure the connectivity of the route, and along with constraints (\ref{naodir2}), are responsible for eliminating sub-cycles in the route. Finally, constraints (\ref{naodir5}) and (\ref{naodir6}) impose that all \textcolor{red}{variables need to be 0-1.}
+
+
+
+\section{Branch-and-cut algorithm}
+\label{sec:bc}
+
+
+The model proposed by Bienstock \textit{et al.} \cite{bienstock1993note} theoretically contains an exponential number of cut-set constraints (\ref{naodir4}). However, the violation of such constraints can be checked in polynomial time, \textcolor{red}{ which allows us to apply an efficient branch-and-cut algorithm}. In this section, we present an  exact B\&C for the PCTSP, based on formulation (\ref{naodir1})-(\ref{naodir6}).
+
+As usual, the family of exponential size constraints \textcolor{red}{(\ref{naodir4})}, are initially
+relaxed. Then, after each LP iteration, they are separated
+to detect whether constraints of this family are
+violated by the current LP solution. If so, the detected \textcolor{red}{
+violated constraints are integrated to the current relaxation, and the strengthened relaxation is solved.
+}
+
+We used the Mixed Integer Programming (MIP) solver Gurobi \textcolor{red}{to solve the LP relaxations and to implement the search tree.} Thus, the strategy described above has been incorporated into an enumeration scheme, in which it is applied not only to the root node of the enumeration tree, but also to all generated nodes. We now describe the separation procedure.
+
+\subsection{Separation procedure}
+
+The algorithm starts with all integrality conditions relaxed and only a subset of constraints. \textcolor{red}{In the initial relaxation, we include all constraints of $P_1$, except for the cut-set (\ref{naodir4}). For the separation procedure, let $G^*=(V^*,E^*)$ be the support graph associated with an optimal solution $S=(x^*,y^*)$ to the current relaxation, in which} $V^* = \{i \in V : y_i^* > 0\}$ and $E^* = \{e \in E : x_e^* >0 \}$. 
+
+Consider  $x_e^*$ as the capacity value of edge $e \in E^*$.
+The cut-set constraints are separated when the LP solution $S$ is integer \textcolor{red}{or} fractional, and for each case, we proceeded as follows. For any $i \in V \setminus \{u\}$, a minimum $(u,i)$-cut is found in $G^*$ through a maximum-flow/min-cut algorithm; if the output is less than \textcolor{red}{$2y_i$}, then we have a violated constraint. In this case, the next step it to add this constraint to the model and resolve it.
+
+For the min-cut procedure, we used the \textcolor{red}{Goldberg's pre-flow push algorithm} \cite{ciupala2008preflow} which runs in $O(|V|^2\sqrt{|E|})$ for each vertex. Therefore, we obtain an overall complexity of $O(|V|^3\sqrt{|E|})$   to find a violated cut-set.
+
+
+\section{MIP heuristics}
+\label{sec:mip}
+Mixed Integer Programming (MIP) is a powerful tool to model and solve hard combinatorial optimization problems, and since MIP-solving is NP-hard \cite{wolsey2014integer}, heuristic methods for it are of high interest. \textcolor{red}{Heuristic methods are often used, since in several cases, they provide feasible solutions quickly, in practice generally meeting customer demand, and avoiding unnecessary explorations of nodes in the branch-and-bound tree. In the following, we present the proposed MIP-based heuristics for the PCTSP.}
+
+\subsection{Relax-and-fix}
+
+The relax-and-fix (RF) is a  heuristic  that  generates  a  solution  by  solving  several small MIPs. It is performed by fixing or relaxing most of the binary variables, enforcing only a few to be integer and then optimizing them \cite{toledo2015relax}. In a preliminary experiment, we obtained good dual bounds by solving a \textcolor{red}{particular} relaxation of the model $P_1$, in which each variable $x_e$  was relaxed and the domain of all  variables $y_i$ was maintained. \textcolor{red}{We called this new model $P_2$, and it can be stated as follows:}
+
+\textcolor{red}{\begin{align*}
+(P_2) \qquad	&Min \quad  \sum_{e \in E} c_e x_e + \sum_{i \in V} w_i (1 - y_i)  \\
+&\text{subject to } (\ref{naodir2} - \ref{naodir5}) \text{ plus:}\\
+	&x_e \in \mathbb{R_+}, \qquad \qquad \qquad \forall e \in E \label{xe-rl} \numberthis
+\end{align*}
+}
+
+\textcolor{red}{
+The RF proposed in this paper, aims to find a feasible solution by successive applications of a B\&B algorithm  followed by fixations  of variables $x_e$, in increasingly restrictive versions of the model $P_2$. Initially, a B\&B is applied on $P_2$ and then, when it is finished, a relaxed variable $x_e^*$ is fixed according to a fractionality criterion. Then, we have an updated version of $P_2$, with $x_e=1$ or $x_e=0$. Once updated, the model $P_2$ is solved again  and a new variable is fixed. This process is repeated until there are no more variables $x_e$ with fractional values. The RF always provided a feasible solution in our experiments, therefore, no recovery strategy was needed in case the current fixing of the variables turns out to be infeasible.} It is noteworthy that although MIP solver applies a B\&B to $P_2$, the branching is only performed on the $y$ variables.
+
+
+\textcolor{red}{
+The pseudo-code of Algorithm \ref{alg:rf} presents the relax-and-fix heuristic devised. In line 1, a solution $S(x, y)$ is obtained by applying a B\&B on $P_2$. In line 2, the set $\Bar{I}$ is initialized containing all the indexes of variables with fractional values in $x$. From lines 3 to 9, while $\Bar{I}$ is not empty i.e., there are variables of $x$ with fractional values, the following steps are performed: i) the variable with the lowest fractionality (the closest variable  to a binary value) is chosen and then fixed in the model with the nearest binary value; \textcolor{red}{and in case of ties, the variable with the lowest edge cost $c_e$ is chosen}; ii) the model $P_2$ is updated, since variable $x_e$ has now been fixed; iii) the model $P_2$ that has just been updated, is solved; and iv) the $\Bar{I}$ set is updated.  In line 10, the final solution is returned.}
+
+\begin{algorithm}[!h]
+	\caption{\hspace{-1mm}\textbf{: RF }($P_2$)}
+	\label{alg:rf}
+	{\footnotesize
+		\begin{algorithmic}[1]	
+			\STATE $S(x,y)\gets$ \texttt{solve($P_2$)} 
+			\STATE $\Bar{I} \gets$ index set of all fractional variables of $x$
+			\WHILE{$\Bar{I} \neq \emptyset$}
+			\STATE select $e$ from $\Bar{I}$ such that $x_e$ has the lowest fractionality 
+			\STATE fix $x_e$ to the nearest binary
+			\STATE \texttt{update}($P_2$)
+			\STATE $S(x,y)\gets$ \texttt{solve($P_2$)} 
+			\STATE \texttt{update}($\Bar{I}$)
+			\ENDWHILE
+			\RETURN $S$
+		\end{algorithmic}
+	}
+\end{algorithm}
+
+\subsection{Diving heuristic}
+
+The state-of-the-art MIP solvers make use of  LP-based branch-and-bound techniques, in which the branching process focuses on two different aims:  \textcolor{red}{on the one hand}, fractional variables should be driven towards integrality  to find feasible solutions. On the other hand, the dual bound should be raised  to prove the optimality \cite{achterberg2009hybrid}. To achieve feasible solutions quickly, it is desirable to focus on bounding variables such that the number of fractional variables decreases \cite{berthold2006primal}.
+
+Following this idea, the diving heuristics try  to bound/fix LP-solution variables to promising values. The name of these heuristics came from the fact that they ``quickly go down'' the branch-and-bound tree. In this paper, we propose a MIP heuristic based on the guided diving  heuristic (GD) \cite{achterberg2005branching}, \textcolor{red}{that makes use of a guide solution to fix variables}. In the following, we describe how the diving idea was implemented in our approach.
+
+
+\textcolor{red}{The GD heuristic consists of performing a B\&B algorithm to the model $P_1$ once, and while the B\&B runs, the diving procedure is applied whenever the current node LP-solution $S^*(x^*,y^*)$ is found and there is a guide $\tilde{x}$, the incumbent (integer) solution obtained during the B\&B itself.} Implementation details of the diving procedure are presented on the Algorithm \ref{alg:diving}.
+
+
+%new LP-feasible solution $\hat{x}^*$ found during the B\&B process, a diving routine is performed. Given an incumbent (integer) solution $\tilde{x}$, it fixes the variable $\hat{x}_j^*$ with the lowest fractionality. Implementation details of the diving routine are presented on the Algorithm \ref{alg:diving}.
+
+
+
+
+%through a branch-and-bound process. Then, given an integer-feasible solution $\tilde{x}$,  
+
+% for each new LP-feasible solution found ($\hat{x}^*$), we 
+%fix the variable $x_j \in \hat{x}^*$ with the lowest fractionality.
+
+
+
+\begin{algorithm}[!h]
+	\caption{\hspace{-1mm}\textbf{: Diving  }($\hat{x}^*,\tilde{x}$)}
+	\label{alg:diving}
+	{\footnotesize
+		\begin{algorithmic}[1]	
+			\STATE $j\gets0$, $frac \gets \infty$;
+			\WHILE{($j < |E|$)}
+            \IF{($0<x_j^*<1$)}				\IF{($|{x}_j^* - \tilde{x}_j| < frac$)}
+					\STATE $frac\gets |{x}_j^* - \tilde{x}_j|$
+					\STATE $ind \gets j$.
+				\ENDIF
+				\STATE $j \gets j +1;$
+			\ENDIF
+			\ENDWHILE
+			\STATE Fix ${x}_{ind}^*$ to the value of $\tilde{x}_{ind}$ 
+			\STATE \texttt{Update}($P_1$)
+		\end{algorithmic}
+	}
+\end{algorithm}
+
+\textcolor{red}{The Algorithm \ref{alg:diving} receives as parameters, the LP-solution of the current tree node and the guide solution. From lines 2 to 10, we obtain the variable $x_j^*$ with the lowest fractionality $|{x}_j^* - \tilde{x}_j|$ ($x_j^*$ with integer values are not considered); and in line 11, ${x}_j^*$ is fixed in the model $P_1$ as its respective value in $\tilde{x}_j$ (either 0 or 1). Finally, the model $P_1$ is updated and the B\&B continues, hopefully faster from now on.}  \textcolor{red}{As for the RF, the  application of a recovery strategy was unnecessary either.}
+
+
+%the implementation of a recovery strategy from unfeasible models was unnecessary either.}
+
+%Note that, because of the fact guided d\hat{x}_j^*iving needs a feasible solution of the MIP, our diving procedure is performed only when an integer feasible solution is found. \textcolor{red}{As for RF, the implementation of a recovery strategy from unfeasible models was unnecessary either.}
+
+
+\section{Computational results}
+\label{sec:results}	
+
+To validate the presented proposals, experiments were conducted with instances proposed by Chaves \textit{et al.}\cite{chaves2005hybrid}. \textcolor{red}{These instances  consist} of problems with $ |V| \in \{11,21,31,51,\- 101, 251, 501\}$, randomly generated at the following intervals. Travel cost between vertices:  $c_{ij} \in [50,1000]$; penalty associated to each vertex:  $w_i \in [1,750]$; prize associated to each vertex: $p_i \in [1,100]$. The minimum prize to be collected,  $PRIZE$, represents 75\% of the sum of the prizes of all vertices. These test problems are available at \url{http://www.lac.inpe.br/~lorena/instancias.html}.
+
+All approaches introduced in this paper were implemented in the \textit{C++} language and compiled with \textit{g++ 5.4.0}. The tests were run on an Intel Core i7-6900K @ 3.20GHz machine with 16 GB of RAM under the operating system Linux Ubuntu 16.04
+LTS with parallel processing features disabled. For the implementation and execution of the mathematical formulations, the Gurobi solver (Version 6.5.2) was used, with its heuristics, cuts and preprocessing disabled. Also, a one-hour processing timeout was determined.
+
+% and the parallelization capability of the CPU was not used.
+
+
+
+
+\subsection{Mathematical formulations}
+
+%In this paper, in addition of the formulation of \cite{bienstock1993note} (``Bien'' for short), the flow-based models of \cite{chaves2005hybrid} (Chaves) and \cite{torres2003problemas} (Torres) were also implemented for proper comparison
+%
+%Neste trabalho, além da formulação de \cite{bienstock1993note} (``Bien'' for short), as formulações de \cite{bibid}
+
+The flow-based formulations of Chaves \textit{et al.} \cite{chaves2005hybrid} and Torres \textit{et al.} \cite{torres2003problemas} were implemented in this work, and then compared to the proposed B\&C. Results of this comparison are reported in Table \ref{tab:chaves-for}, in which the first column indicates the name of the instances and for each model, the solution value and spent time (in seconds) are presented. The best results are highlighted in bold, and the ``-'' symbol indicates that no solution was found within one-hour CPU time.
+
+\begin{table}[!ht]
+	\centering
+	\caption{Results for the mathematical formulations}
+	\label{tab:chaves-for}
+	\begin{tabular}{lrrrrrr}
+		\hline
+		& \multicolumn{2}{c}{B\&C} & \multicolumn{2}{c}{Torres} & \multicolumn{2}{c}{Chaves } \\ 
+		Instance & Sol. & T(s) & Sol. & T(s) & Sol. & T(s) \\\hline
+		v10 & \textbf{1765} & \textbf{0.00} & \textbf{1765} & 0.03 & \textbf{1765} & 0.03 \\
+		v20 & \textbf{2302} & \textbf{0.01} & \textbf{2302} & 0.70 & \textbf{2302} & 1.22 \\
+		v30a & \textbf{3582} & \textbf{0.00} & \textbf{3582} & 2.66 & \textbf{3582} & 4.43 \\
+		v30b & \textbf{2515} & \textbf{0.00} & \textbf{2515} & 3.67 & \textbf{2515} & 6.41 \\
+		v30c & \textbf{3236} & \textbf{0.03} & \textbf{3236} & 12.63 & \textbf{3236} & 15.47 \\
+		v50a & \textbf{4328} & \textbf{0.10} & \textbf{4328} & 314.74 & \textbf{4328} & 422.65 \\
+		v50b & \textbf{3872} & \textbf{0.12} & \textbf{3872} & 375.30 & \textbf{3872} & 688.77 \\
+		v100a & \textbf{6762} & \textbf{0.27} & 7633 & 3600.00 & 7454 & 3600.00 \\
+		v100b & \textbf{6760} & \textbf{0.17} & 7290 & 3600.00 & 7668 & 3600.00 \\
+		v250a & \textbf{14083} & \textbf{12.67} & - & 3600.00 & - & 3600.00 \\
+		v250b & \textbf{13632} & \textbf{8.35} & 14935 & 3600.00 & 14715 & 3600.00 \\
+		v500a & \textbf{25848} & \textbf{102.06} & - & 3600.00 & - & 3600.00 \\
+		v500b & \textbf{26389} & \textbf{130.17} & - & 3600.00 & - & 3600.00 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+
+
+
+We remark that, in the literature, the formulation of Chaves \textit{et al.} \cite{chaves2005hybrid} does not present better results than those shown in this paper, even with a time-limit greater than 42 hours, and the Torres' model has never been tested with these instances before.
+
+From Table \ref{tab:chaves-for}, one realizes that the B\&C approach outperforms the others exact approaches in the literature, both in solution quality and processing time. The formulation of Bienstock \textit{et al.} \cite{bienstock1993note} along with the proposed separation procedure, was able to solve all the 13 test problems proposed by Chaves \textit{et al.} \cite{chaves2005hybrid}, proving optimality in six cases, in which the optimal solution was unknown until now. On the other hand, the formulations of the literature were able to solve only instances with up to 50 vertices, considering the time limit of one hour. Regarding the literature models, the Chaves' formulation required a higher CPU time than Torres', but in general, these two models presented similar performance.
+
+
+
+\subsection{Heuristics}
+
+After testing the formulations, experiments were conducted with the proposed heuristics. Despite the tabu search (TS)\cite{pedro2013tabu}  reached better-quality solutions than CS* for a few instances, herein we consider CS* as the state-of-the-art heuristic, since Pedro \textit{et al.} \cite{pedro2013tabu} do not present the CPU time spent by their heuristic.
+
+%and even knowing that the B\&C  did not find it difficult to solve the instances of Chaves \textit{et al.}\cite{chaves2005hybrid}, 
+
+
+%Table \ref{tab:chaves-heur} presents a comparison between the CS* \cite{chaves2005hybrid}) and the heuristics proposed in this work. 
+
+\textcolor{red}{As the original source-code of CS* was unavailable and the experiments reported in Chaves \textit{et al.}\cite{chaves2005hybrid} have been made on a different processor, we followed the idea of Pinto \textit{et al.} \cite{PINTO2018849} by considering an approximate scale ratio to compare the speed of both
+processors. Concerning the single-rating performance, once the algorithms were tested on single-thread environments, the respective ratio for the two CPU models is 463/2184 $\approx$ 0.21, according to the PassMark benchmark \cite{passmark}.}
+
+A comparison between the proposed heuristics and CS* are presented in Table  \ref{tab:chaves-heur}. The symbol ``?'' represents the lack of value reported in the literature for the respective instance,  the best results are bold-faced, \textcolor{red}{and the running times for CS* are those reported by Chaves \textit{et al.} \cite{chaves2005hybrid}, multiplied by the scale factor 0.21.}
+
+
+
+%.  For the CPU time a separate analysis is presented later.
+
+\begin{table}[ht]
+	\centering
+	\caption{Results for the heuristics \textcolor{red}{(original running times of CS* multiplied by 0.21)}}.
+	\label{tab:chaves-heur}
+	\begin{tabular}{lrrrrrrrr}
+		\hline
+		&  & \multicolumn{3}{c}{CS*} & \multicolumn{2}{c}{RF} & \multicolumn{2}{c}{GD} \\
+		Inst. & \begin{tabular}[c]{@{}l@{}}OPT\\ \end{tabular} & \begin{tabular}[c]{@{}l@{}}Best\\ Sol.\end{tabular} & \begin{tabular}[c]{@{}l@{}}Avg.\\ Sol.\end{tabular} & \begin{tabular}[c]{@{}l@{}}Avg.\\ T. (s)\end{tabular} & \multicolumn{1}{c}{Sol.} & \multicolumn{1}{c}{T. (s)} & \multicolumn{1}{c}{Sol.} & \multicolumn{1}{c}{T. (s)} \\
+		\hline 
+		v10 & 1765 & \textbf{1765} & 1765.0 & \textbf{0.01} & \textbf{1765} & \textbf{0.01} & \textbf{1765} & \textbf{0.01} \\
+		v20 & 2302 & \textbf{2302} & 2302.0 & 0.20 & \textbf{2302} & \textbf{0.01} & \textbf{2302} & 0.02 \\
+		v30a & 3582 & \textbf{3582} & 3591.0 & 0.22 & \textbf{3582} & \textbf{0.01} & \textbf{3582} & 0.02 \\
+		v30b & 2515 & \textbf{2515} & 2515.0 & 0.24 & \textbf{2515} & \textbf{0.02} & \textbf{2515} & \textbf{0.02} \\
+		v30c & 3236 & \textbf{3236} & 3241.0 & 0.25 & \textbf{3236} & \textbf{0.04} & 3245 & \textbf{0.04} \\
+		v50a & 4328 & \textbf{4328} & 4346.0 & 8.10 & \textbf{4328} & 0.14 & \textbf{4328} & \textbf{0.10} \\
+		v50b & 3872 & \textbf{3872} & 3881.0 & 7.87 & \textbf{3872} & \textbf{0.06} & \textbf{3872} & 0.11 \\
+		v100a & 6762 & 6832 & 6906.0 & 151.77 & 6764 & \textbf{0.18} & \textbf{6762} & 0.41 \\
+		v100b & 6760 & 6782 & 6844.0 & ? & 6771 & 0.51 & \textbf{6760} & \textbf{0.21} \\
+		v250a & 14083 & 15162 & 15284.0 & 245.21 & \textbf{14083} & \textbf{6.04} & \textbf{14083} & 7.79 \\
+		v250b & 13632 & 14078 & 14176.0 & ? & 13643 & 55.54 & \textbf{13632} & \textbf{3.67} \\
+		v500a & 25848 & 28213 & 28462.0 & 434.32 & \textbf{25848} & \textbf{60.50} & \textbf{25848} & 79.99 \\
+		v500b & 26389 & 28133 & 28334.0 & ? & \textbf{26389} & \textbf{9.12} & \textbf{26389} & 110.92\\
+		\hline
+	\end{tabular}
+\end{table}
+
+
+From Table \ref{tab:chaves-heur}, one can observe that in terms of the best solution obtained,  both RF and GD heuristics outperformed the CS* in all cases, and GD achieved an optimal solution for all of them, except for the instance v30c. In general, we can realize that the proposed heuristics were able to improve the solutions obtained by CS*, mainly for  larger instances, in a shorter CPU time.
+
+% Moreover, although executed in a different computational environment, we can observe that in addition to solution quality, the MIP heuristics spent a very low computational time compared to CS*.
+
+\subsubsection{Growth function analysis}
+
+\textcolor{red}{In this section, we present an extra analysis concerning the CPU time. According to Barr \textit{et al.}\cite{barr2001guidelines}, in the absence of an ideal environment, the time comparisons between heuristics executed on different platforms are at best imprecise.}
+
+\textcolor{red}{
+Although a complexity function can give an idea of how the CPU times can grow with the size of a problem, an empirical estimate of this growth can be very useful in evaluating how a heuristic will perform in large instances of a problem. In Figure \ref{fig:gfcs}, the empirical growth functions of the respective CS*, RF e GD heuristics are illustrated. For this illustration, we took into account the average CPU times of each instance size (instances with ``?'' were not included). For the construction of the growth function, we considered that the values of $|V|$ and average time are polynomial related, and then a polynomial regression was applied using the R package \cite{r-package}.}
+
+\textcolor{red}{
+For each heuristic, a curve obtained by polynomial regression of degree 2 was drawn. Next to the label of each heuristic is presented the respective polynomial equation and its coefficients. Other regressions were tested, but the polynomial was the one that best described the data. Also, other degrees were tested for the polynomial regression itself, but since with degree 2 we already had a reasonable value of $R^2$ (coefficient of determination), we decided not to use higher degrees to prevent overfitting the model.}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=10cm]{fig.eps}%
+	\caption{Time growth function of the heuristics CS*, RF and GD.}
+	\label{fig:gfcs}%
+\end{figure}
+\textcolor{red}{
+Figure \ref{fig:gfcs} illustrates a very similar behavior on both heuristics RF and GD. From cases with 50 vertices, the CS*'s function grows considerably faster than the others. For CS*, the CPU time difference between instances with 100 and 50 vertices is 143.78 seconds, between 250 and 100 is 93.43 seconds, and between 250 and 500 is 189.11 seconds. On the other hand,  the growth of our heuristics' function is smoother. For example, with the RF, the difference between 100 and 50 vertices is 0.08 seconds, between 250 and 100 is 5.8 seconds, and between 250 and 500 is 54.46 seconds.
+}
+
+\section{Conclusions}	
+\label{sec:conclusions}	
+
+In this paper, we addressed the PCTSP which represents an extension of well-known TSP and very applicable in the real world. To handle such problem, we have proposed some simple and easy-to-implement solution methods that additionally provide to be computationally feasible. As an exact approach, three formulations of the literature were implemented and tested. The formulation of Bienstock \textit{et al.} \cite{bienstock1993note}  has an exponential number of cut-set constraints, so a branch-and-cut algorithm along with a polynomial separation procedure was proposed. In terms of non-exact approach, we devised two MIP-based heuristics, which make use of the linear relaxation of the problem along with bound and diving procedures.
+
+The results of experiments with the instances of Chaves \textit{et al.}\cite{chaves2005hybrid} showed that the B\&C algorithm solved all instances in a much shorter time than the others approaches from literature, and yet proved unprecedented  optimality for some instances. Moreover, the literature formulations were unable to solve instances with more than 50 vertices. 
+
+Concerning the non-exact approaches, the results of our MIP heuristics outperformed the state-of-the-art heuristic, achieving the optimal solution  for almost all cases. We highlight the guided diving heuristic, in which solved many instances faster than the B\&C itself. 
+
+%Although our heuristics require a low CPU time, it is not fair to directly compare with the times obtained by CS*, which was run in a different environment. Then, we performed 
+
+%an experiment that plots a growth function of the average time in relation to the size of the instances. Our analysis is that the growth function of the proposed heuristics grows much smoother than that of CS*.
+
+The  B\&C was able to satisfactorily solve all test-problems within a reasonable time (at most 130.17 seconds). However,  we hypothesize that for larger instances, B\&C might  be incapable of finding optimal solutions due to machine memory issues. In this case, it would be interesting to apply the GD heuristic, which also handled the instances very well, but in a shorter CPU time.
+
+We also believe our B\&C has great potential to be hybridized with other heuristics to tackle more difficult problems. Hence, as future work, we intend to follow the hybridization idea of Cl\'imaco \textit{et al.}\cite{climaco2018} and combine the B\&C algorithm with some heuristic based on metaheuristic, such as genetic algorithms \cite{kramer2017genetic}, GRASP \cite{resende2016optimization} or Tabu Search \cite{laguna2018tabu}.
+
+%%-----------------------------
+%%      your bibliography
+%%-----------------------------
+%\setcitestyle{numbers} % set the citation style to ``numbers''.
+
+\bibliographystyle{plain}
+%\setcitestyle{authoryear,open={((},close={))}}
+
+\bibliography{bib}
+\end{document}
+

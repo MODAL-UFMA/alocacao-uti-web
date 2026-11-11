@@ -1,3 +1,5 @@
 *.pyc
 __pycache__/
 avaliacao-desempenho-uti
+
+doc/artigo-elsevier/elsarticle/doc/

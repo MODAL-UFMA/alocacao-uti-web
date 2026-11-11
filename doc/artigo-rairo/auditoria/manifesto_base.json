@@ -1,0 +1,131 @@
+{
+  "git_head": "ec4da9ca9a581cf04424bab547bcb1690a951622",
+  "description": "Identificação dos arquivos de entrada antes de correções; não é uma cópia de segurança. Originais do artigo também constam no ZIP recebido.",
+  "files": [
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "bytes": 1038,
+      "sha256": "eb74bca826b63adc2acbab59e91dbb432547d5aa27edb2063afc3ac91d255971"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 44,
+      "sha256": "6a4f8d864fa38b24384edafcf157127475c06b208ca9b9607e60ebf2e2e75a18"
+    },
+    {
+      "path": "README.MD",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app-uti-sim/app.py",
+      "bytes": 15073,
+      "sha256": "44ec3d1045690bf9253b885781c1e861cf6acba41e8f767c97f74a16a34cb678"
+    },
+    {
+      "path": "app-uti-sim/core/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app-uti-sim/core/allocation.py",
+      "bytes": 3570,
+      "sha256": "40a160f57732d51235b709e9f45d22c692b22feedfe8b4397f9a6453358da1d1"
+    },
+    {
+      "path": "app-uti-sim/core/metrics.py",
+      "bytes": 2047,
+      "sha256": "cf57d1df3cf21bbc44fb1546b22d215208200d39b60a96d620d233aee4774162"
+    },
+    {
+      "path": "app-uti-sim/core/patients.py",
+      "bytes": 1658,
+      "sha256": "c81b053ad98b7ef3dfa1f20649a0286896aa1da3b9f9c0fd5f05a8a5c6d7f8c6"
+    },
+    {
+      "path": "app-uti-sim/core/visuals.py",
+      "bytes": 2014,
+      "sha256": "8dafc6d85f09a5f3b1e1520d7c231ab8c095ef74579989f20ef49abec5a04b87"
+    },
+    {
+      "path": "app-uti-sim/requirements.txt",
+      "bytes": 121,
+      "sha256": "3c2af211fb201afaf9d059da2904ac3ff2567af9a55a0ed46357b651605d8a8f"
+    },
+    {
+      "path": "doc/artigo-rairo/arquivos/comentarios do revisor.pdf",
+      "bytes": 113340,
+      "sha256": "d213859fd29ccd90a1cee6f04731753009e83446f5fd7d8168d3b7550fea4278"
+    },
+    {
+      "path": "doc/artigo-rairo/backups/19-DEZ-2019.tex",
+      "bytes": 34332,
+      "sha256": "5ef340e5ea9a7190fa77d6f71921b27b0af785a9b3fe143afb7acbe0e955331e"
+    },
+    {
+      "path": "doc/artigo-rairo/backups/2-out-highlight in red - glaubos.tex",
+      "bytes": 32982,
+      "sha256": "e79a55261ca3ee4f0634e2bda8cbbb4b88c626cbb8e7900d8d5a197d8c92289e"
+    },
+    {
+      "path": "doc/artigo-rairo/backups/backup-2-outubro-glaubos.tex",
+      "bytes": 32333,
+      "sha256": "0b7b03ae3710382bdaba9abc70dced3968445cba013b5a21d6a4cec6b2460492"
+    },
+    {
+      "path": "doc/artigo-rairo/backups/backup-24-out-Isabel.tex",
+      "bytes": 32572,
+      "sha256": "2180c30954f2543c8c2d90da286c26d4dbeb556f290897bc0ce3da5ed906e137"
+    },
+    {
+      "path": "doc/artigo-rairo/backups/luidi-v2-27-nov-19.tex",
+      "bytes": 34328,
+      "sha256": "288485c4534268f1dc9f9fdda08c0ad1afe5c4ed7704473d4156bf7220357ecb"
+    },
+    {
+      "path": "doc/artigo-rairo/bib.bib",
+      "bytes": 25888,
+      "sha256": "706cace2a8f30f66080b702820f439db88e2b164654fcd79bd6015168724a8bd"
+    },
+    {
+      "path": "doc/artigo-rairo/d1.jpeg",
+      "bytes": 100236,
+      "sha256": "b3369f4c248da27fc08a473983e4c1ec7a0afef34992157729eb56fa37b9137b"
+    },
+    {
+      "path": "doc/artigo-rairo/d2.jpeg",
+      "bytes": 97746,
+      "sha256": "d592b542b2d25761657c08b055b16f3c8fb990c217e127634d8b282b72eb634a"
+    },
+    {
+      "path": "doc/artigo-rairo/d3.jpeg",
+      "bytes": 92956,
+      "sha256": "07b95fd0ae0ac45bc0eba7ff660ebf7fc5099b338bb15346afde5aa6083701ef"
+    },
+    {
+      "path": "doc/artigo-rairo/main.tex",
+      "bytes": 35750,
+      "sha256": "7fa713f4a77cd4982681808f4aeb3eb29dfcb3dcb88310c5889e1c407002dc05"
+    },
+    {
+      "path": "doc/artigo-rairo/name.tex",
+      "bytes": 9001,
+      "sha256": "1e8a9b935d02a3adfcd067bbe8de42ed35241f5405c8ce98e51f82b762ad409c"
+    },
+    {
+      "path": "doc/artigo-rairo/ro.cls",
+      "bytes": 20485,
+      "sha256": "30ba5715b37ba9bbe574789708b44e8b260e0e86961a89afbef13ddbf8b08e87"
+    },
+    {
+      "path": "monte-carlo-simulation.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
