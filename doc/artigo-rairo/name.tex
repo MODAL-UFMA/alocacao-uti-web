@@ -1,0 +1,67 @@
+View Letter
+Date:	14/01/2025
+To:	"Francisco Glaubos Nunes Clímaco" francisco.glaubos@ufma.br
+cc:	"Carlos Eduardo Veras Gomes" carlos.evg@dicente.ufma.br, "João Augusto Ferreira Nunes de Carvalho" augusto.joa@dicente.ufma.br
+From:	"Flavia Bonomo" fbonomo@dc.uba.ar
+Subject:	Editorial Decision for your Article ro240829
+Ref.: ro240829
+Title: Improving ICU Bed Allocation: A Mathematical Model Integrating Bed Types and Optimal Occupancy Rate
+
+
+Dear Mr Clímaco,
+
+Your manuscript has been examined by the Editor-in-Chief of RAIRO - Operations Research.
+
+I am sorry to inform you that it will not be possible to send your article out for in-depth review. The reason is
+that scientific contribution of the work is too weak.
+Papers are selected for in-depth review on the basis of the accordance with the Aims and scope of the journal, the scientific contribution, subject interest and general significance of the study.
+
+
+Comments for authors:
+This submission studies the allocations of patients to ICU beds, based on different types of beds (adult, pediatric, or neonate) for different pateint needs. The authors claim to study several types of allocation procedures to assign patients to beds, based on maximizing overall survival expectation (MGS), or least serious first (LSF), most serious first (MSF), and first come first serve (FCFS). Simulation scenarios are run with graphs that show how these four objectives perform. The authors have used data from a University hospital during the COVID-19 pandemic. The authors conclude that it is important to have adaptable allocation procedures tailored to dynamic healthcare needs.
+
+Review:
+
+The topic is certainly an important one. Lives are at stake, and such tools can be useful for ICU administrators. I found the paper difficult to read, and I recommend rejection of this manuscript for several reasons.
+
+1. The timing of the decisions in the model is not clearly linked to the timing of the decisions in an actual ICU setting. It is therefore not clear how the insights from the model might carry over into practice. For example, the objective functions in sections 3.1 to 3.3 (MGS, LSF, MSF) seem to be for static allocations of patients all at once. Thus, they seem to determine a static allocation of each type of beds to have a static allocation of each patient. This seems to assume a one-shot allocation of a known pre-set of patients to a fixed number of beds. But the paper concludes with the importance of dynamic allocations, and it is the all allocation in section 3.5 that is actually dynamic (FCFS). And it turns out that patients may arrive each day in practice, or may be discharged after random lengths of stay. The one dynamic allocation (FCFS) does the worst in experiments reported in the experiment section, but there is a claim that dynamic allocations do great. The authors would strongly benefit from making it much more clear how the arrival process of patients and the scheduling decisions are made, and to better clarify how their work could be implemented in practice. What are the timing decisions? Perhaps the authors can clarify how MGS, LSF and MSF would be used in a dynamic setting.
+
+2. Even if the timing of the decisions were clarified, the model is not described sufficiently enough for a competent reader to be able to implement the work. Because it is not clear what is being modeled, it is not clear how to interpret the results. In section 3 (the beginning), it would be helpful to clarify how the probability of survival of patient i might be computed. For example, by clarifying if it depends on the age and SOFA score or other features, and describing the distributions that are assumed for such variables. Equations 6-8 give the constraints for bed types, but they refer to the bed types in the subscripts for x as being in J={0,1,2}. but the sums for bed types go from 1,2,...,J (where here J is apparently a natural number rather than a set). Simlarly, the authors should clarify why I is a set in Table 1 but it seems to be a number of patients in the equations in 3.1-3.3. It would be helpful to characterize some of the summary statistics and the input distributions that were used for the patient populations in the simulation scenarios. It seems to have been studied in cited paper [11], but there is inadequate discussion of the main features used from that paper. What are the fractions of the different age groups? of SOFA scores? of how probabilities of survival were estimated from ages and SOFA and comorbidities? (this is not a request for the full analysis of [11] to be reproduced here - but it is a request that sufficient high-level assessment be made to be able to help the reader understand what is going on with the model mechanics, and enough to be able to critically assess important assumptions).
+
+A side-effect of points 1 and 2 above is that a 'scenario' is not clear. What is a demand level d, and why is its value 1 to 6? Why is d later called a demand dynamic? What are the severities G_i? Are the 'rounds' of section 5 actually 'days' or 'half-days' in a long sequence of consecutive periods of time? Or are they completely independent scenarios. If these are sequences of time steps, can you describe how discharge decisions are modeled?
+
+3. The abstract says tha the LSF strategy is more effective in lower-demand contexts. But the experiments show that MGS is still better than LSF in the low-, medium and high demand contexts (Figures 1-3, respectively). Can the authors rewrite the main conclusions of the abstract in a way that is more consistent with the output of the experiments? Also, can the results be interpreted a bit further? For example, what explains the difference between MGS and LSF being smaller in Fig 3 as compared to differences that are seen in the other figures?
+
+Overall, the topic is important. The work is not sufficiently described for a competent reader to reproduce the experiment, the assumtions and relevance of the model to practice would benefit from further clarification, and some of the experiments would benefit from further interpretation.
+
+Other observations:
+
+1. What are the units of the parameter M that penalize deviation from the target OR capacity? What is the value of this parameter in the experiments, and are the results sensitive to the choice of the value of M? Would it mot make more sense to have a deviation in linear terms be a penalty, rather than a squared term penalty, so that it has a meaning that is proportional to a probability of survival, given that the first terms in the penalized objective functions are proportional to survival probabilities?
+
+2. Can a discussion of the parameter M be made that indicates why it might be good to refuse admission of a patient that may need ICU care to be cared for in another setting?
+
+3. What is the value of target utilization, OR, in the experiments? Can the authors explain why the occupancy rate is over all types of beds, rather than a target for each type of bed? E.g., it seems to be ok for the neonate and pediatric to be at 100% utilization if the adult ICU is sufficiently empty. If having a spare bed is useful, then it is not clear that this pooled utilization will help.
+
+4. At the end of section 3.5: '... will resceive the next available bed that is suitable for that patient'. (need to specify suitable). Can you please clarify explicitly what happens if the patient is in need of an ICU bed but there is no capacity for that patient? And how long that patient might need to wait for a discharge decision of another patient before that patient can enter the ICU?
+
+5. page 7: in the paragraph starting 'In line 3, ...' please check the text in italic: isgenerated.,
+
+6. algorithm 1 has some typos: line 1 is it scenario? line 8-9: are these subscripts?
+
+7. Algo 2: line 2 refers to A, Q, OR, but these are not defined in the algorithm, nor is their value instantiated. I would recommend that for all algorithms that the meaning of all inputs and outputs, and all values of parameters in calls, be clearly defined.
+
+8. Please double-check the references. Throughout: Should covid-19 be COVID-19 throughout? ICU capitalized thrughout? Are references 2 and 3 the same? In [11] and elsewhere if needed: capitalize Bayesian. in [18] please capitalize ICU, Journal, and Computing, and give full volume, number, pages.
+
+
+Our decision should not be interpreted as an adverse judgement on the quality of your manuscript.
+At the present time we receive a large number of manuscripts which obliges us to be very stringent and selective about the papers that are considered for in depth review.
+
+Yours sincerely,
+
+Editors-in-Chief
+Flavia Bonomo
+Safia Kedad-Sidhoum
+
+RAIRO - Operations Research
+
+In compliance with data protection regulations, you may request that we remove your personal registration details at any time. (Use the following URL: https://www.editorialmanager.com/ro/login.asp?a=r). Please contact the publication office if you have any questions.

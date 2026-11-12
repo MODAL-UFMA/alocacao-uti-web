@@ -1,0 +1,28 @@
+{
+  "title": "Dynamic ICU Bed Allocation Under Resource Scarcity: Simulation Engine, LP Bounds, and HU-UFMA Empirical Calibration",
+  "upload_type": "software",
+  "description": "Continuous-time discrete-event simulation (DES) and retrospective time-indexed linear programming (LP) upper bounds (Hindsight LP and Duration-Expectation LP) for multi-type ICU bed allocation under resource scarcity, calibrated with DATASUS/CNES bed capacities (HU-UFMA, 55 beds) and AMIB/Epimed Brazilian ICU registry targets.",
+  "creators": [
+    {
+      "name": "Gomes, Carlos Eduardo Veras",
+      "affiliation": "Federal University of Maranhão (UFMA)"
+    },
+    {
+      "name": "Carvalho, João Augusto Ferreira Nunes de",
+      "affiliation": "Federal University of Maranhão (UFMA)"
+    },
+    {
+      "name": "Clímaco, Francisco Glaubos Nunes",
+      "affiliation": "Federal University of Maranhão (UFMA)"
+    }
+  ],
+  "license": "MIT",
+  "version": "v3.0-cor-r3",
+  "keywords": [
+    "Healthcare Operations Research",
+    "Intensive Care Units",
+    "Discrete-Event Simulation",
+    "Triage Policies",
+    "Linear Programming Bounds"
+  ]
+}

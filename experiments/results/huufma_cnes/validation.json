@@ -1,0 +1,11 @@
+{
+  "evaluations_checked": 4800,
+  "checks": [
+    "probability and outcome bounds",
+    "admission ids and counts",
+    "type capacities",
+    "MGS unpenalized expected survival dominates other policies on each shared scenario",
+    "output hashes match metadata"
+  ],
+  "status": "passed"
+}

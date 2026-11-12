@@ -1,0 +1,16 @@
+{
+  "data_kind": "synthetic_not_clinically_calibrated",
+  "model": "static_exclusive_compatibility_v1",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+  "source_sha256": "7b57f9af4843d82db870c16c1cf58c2e481be5d1526660c2515eb451fa03c6f8",
+  "confidence_interval": "normal approximation mean +/- 1.96*SE across independent replications; exploratory, no multiplicity adjustment",
+  "fcfs": "capacity-only baseline; ignores occupancy penalty when admitting; repeated unchanged across penalty settings",
+  "outputs_sha256": {
+    "config.json": "37506bbea162b4dae8e81f6bffa46d3a96dd383797342fec8b9702a44670876a",
+    "paired_differences.csv": "be32e5daddba4124a9f1e7f2bf81444a496a942c18236ffa59899044f9838af0",
+    "patients.csv": "9a2a58a4b3720f00c9b8f6b20dc58260ed0ee159db0db6d784c847b4a983686d",
+    "runs.csv": "06b918e1bca2ca421fc2433491fbd9d815d0c3e6c950c67f59111e2c915d66f3",
+    "summary.csv": "f71d7a1c2261fb29a0c9fe73e6359e3573fd54ad480b730b5939f068e83cdb1d"
+  }
+}
