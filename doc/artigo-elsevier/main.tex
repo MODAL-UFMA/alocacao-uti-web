@@ -37,19 +37,19 @@
             country={Brazil}}
 
 \begin{abstract}
-During acute public health crises, epidemic surges, and mass-casualty incidents, intensive care unit (ICU) demand frequently exceeds physical bed availability. Conventional optimization models often formulate ICU triage as a static, single-batch portfolio selection problem with homogeneous beds, overlooking continuous stochastic arrivals, waiting-time clinical deterioration, severity-correlated length of stay (LOS), and specialty barriers across critical care units. This paper presents a continuous-time discrete-event simulation (DES) framework and a retrospective time-indexed mixed-integer linear programming (MILP) benchmark for dynamic multi-type ICU bed allocation. The model is calibrated using official bed capacities from the Brazilian National Register of Healthcare Establishments (DATASUS/CNES) for the University Hospital of the Federal University of Maranh\~ao (HU-UFMA; 55 critical care beds across adult, coronary, pediatric, and neonatal units) combined with specialty-specific epidemiological parameters from the Brazilian ICU Registry (AMIB/Epimed) and the Brazilian Neonatal Research Network. We evaluate six online admission rules---First-Come, First-Served (FCFS), Most Serious First (MSF), Least Serious First (LSF), Marginal Gain in Survival (MGS), a benefit-per-bed-day index (CMU-MGS), and a deterioration-rate index (AUSTERE)---alongside an offline LP/MILP upper bound across 100 Common Random Numbers (CRN) replications over a 60-day steady-state horizon. Under severe congestion ($\rho = 1.60$), CMU-MGS and AUSTERE save $20.80$ ($95\%$ CI $[20.09, 21.50]$, $+4.82\%$, $p_{\text{Holm}} < 0.001$) and $20.13$ ($+4.67\%$) more expected lives than FCFS, respectively, while cutting mean waiting times of admitted patients from $18.3$ to $9.6$ hours and achieving an optimality gap of $9.93\%$ relative to the clairvoyant upper bound. A two-parameter sensitivity analysis across severity--LOS coupling ($\beta \in [0, 2.4]$) and queue deterioration ($\alpha_{\text{det}} \in [0.05, 0.50]\text{ day}^{-1}$) reveals that normalizing marginal survival benefit by expected bed-days (CMU-MGS) saves up to $+4.21$ additional lives over greedy MGS ($p < 0.001$) when severe patients require substantially longer stays. Furthermore, hierarchical adult--coronary overflow pooling saves up to $+3.90$ expected lives at balanced capacity ($\rho = 1.00$), and index policies remain statistically superior to FCFS under simultaneous observation noise across all clinical and LOS inputs ($\sigma_{\text{noise}} \le 0.20$).
+During acute public health crises, epidemic surges, and mass-casualty incidents, intensive care unit (ICU) demand frequently exceeds physical bed availability. Conventional optimization models often formulate ICU triage as a static, single-batch portfolio selection problem with homogeneous beds, overlooking continuous stochastic arrivals, waiting-time clinical deterioration, severity-correlated length of stay (LOS), and specialty barriers across critical care units. This paper presents a continuous-time discrete-event simulation (DES) framework and retrospective time-indexed linear programming (LP) upper bounds for dynamic multi-type ICU bed allocation. The model combines empirical bed capacities from the Brazilian National Register of Healthcare Establishments (DATASUS/CNES) for the University Hospital of the Federal University of Maranh\~ao (HU-UFMA; 55 critical care beds across adult, coronary, pediatric, and neonatal units) with specialty-specific LOS and hospital mortality targets from the Brazilian ICU Registry (AMIB/Epimed), while explicitly separating measured registry statistics, calibrated survival parameters, and counterfactual assumptions. We evaluate six online admission rules---First-Come, First-Served (FCFS), Most Serious First (MSF), Least Serious First (LSF), Marginal Gain in Survival (MGS), a benefit-per-bed-day index (CMU-MGS), and a heuristic deadline-urgency extension (AUSTERE)---alongside two policy-independent offline LP upper bounds across 100 Common Random Numbers (CRN) replications over a 60-day steady-state horizon. Under severe congestion ($\rho = 1.60$), CMU-MGS and MGS save $18.66$ ($95\%$ CI $[17.85, 19.48]$, $+3.64\%$, $p_{\text{Holm}} < 0.001$) and $17.19$ ($+3.35\%$) more expected lives than FCFS, respectively, while cutting mean waiting times of admitted patients from $18.27$ to $8.99$ hours. Against a hindsight LP bound that knows realized individual stays ($\text{LOS}_i$) and cherry-picks ultra-short realizations, the pessimistic gap of CMU-MGS at $\rho = 1.60$ is $9.89\%$; when evaluated against a tighter duration-expectation LP bound using $\mathbb{E}[\text{LOS}_i]$ (matching the online information set on stay durations), the gap drops to $4.84\%$. A 24-cell sensitivity analysis across severity--LOS coupling ($\beta \in [-0.6, 2.4]$) and queue deterioration ($\alpha_{\text{det}} \in [0.05, 0.50]\text{ day}^{-1}$) shows that CMU-MGS saves up to $+4.99$ additional lives over greedy MGS ($p_{\text{Holm}} < 0.001$) when severe patients require longer stays ($\beta \ge 1.2$), and remains robust when reneging entails partial or total pre-ICU mortality ($\theta_{\text{ren}} \in \{0.5, 0.0\}$) as well as under simultaneous clinical estimation noise ($\sigma_{\text{noise}} \le 0.20$).
 \end{abstract}
 
 \begin{highlights}
-\item Dynamic simulation of four ICU bed pools calibrated with CNES and Epimed data.
-\item Models waiting-queue clinical decay and severity-dependent length of stay.
-\item Benchmarks c$\mu$-type and austere indices against an offline LP/MILP upper bound.
-\item CMU-MGS saves 20.8 more expected lives than FCFS at $\rho=1.6$ ($p_{\text{Holm}}<0.001$).
-\item Quantifies adult--coronary overflow gains and robustness to clinical noise.
+\item Dynamic simulation of four ICU bed pools grounded in CNES capacities and Epimed targets.
+\item Separates measured registry metrics, calibrated parameters, and counterfactual assumptions.
+\item Benchmarks online policies against hindsight and duration-expectation LP upper bounds.
+\item CMU-MGS saves 18.7 more expected lives than FCFS at $\rho=1.6$ (4.8\% gap to $\mathbb{E}[\text{LOS}]$ LP bound).
+\item Evaluates reneging mortality payoffs, negative $\beta$ coupling, and adult--coronary pooling.
 \end{highlights}
 
 \begin{keyword}
-Healthcare Operations Research \sep Intensive Care Units \sep Discrete-Event Simulation \sep Triage Policies \sep Queueing with Abandonment \sep Mathematical Programming
+Healthcare Operations Research \sep Intensive Care Units \sep Discrete-Event Simulation \sep Triage Policies \sep Queueing with Abandonment \sep Linear Programming Bounds
 \end{keyword}
 
 \end{frontmatter}
@@ -65,19 +65,19 @@ In hospital operations, however, critical care allocation is governed by four in
 \begin{enumerate}[(i)]
     \item \textbf{Asynchronous Arrivals and Bed Turnover:} Patients arrive continuously over time, while bed vacancies arise stochastically as admitted patients recover, transfer to step-down wards, or die \cite{chan2012optimizing, kim2015association, Bilbao_2022}.
     \item \textbf{Waiting-Queue Clinical Deterioration and Abandonment:} Candidates held in emergency departments or pre-ICU wards experience progressive physiological instability; prolonged boarding reduces the survival benefit of subsequent ICU admission and can culminate in pre-ICU mortality or clinical reneging \cite{cardoso2011impact, sun2018patient}.
-    \item \textbf{Severity--Duration Trade-off:} More severely ill patients often require prolonged mechanical ventilation and vasoactive support, inducing a positive correlation between baseline clinical severity and ICU length of stay (LOS) \cite{zampieri2019icu, soares2024update}. Consequently, admitting a patient with high absolute benefit may lock a bed for an extended period, blocking multiple shorter-stay candidates.
+    \item \textbf{Severity--Duration Coupling:} Critically ill patients who survive frequently require prolonged mechanical ventilation and vasoactive support, inducing a positive correlation between baseline clinical severity and ICU length of stay (LOS) among survivors, whereas ultra-severe patients who suffer early in-ICU death may experience truncated stays \cite{zampieri2019icu, soares2024update}. When severe patients require longer stays, admitting a candidate with high absolute benefit locks a bed for an extended period, blocking multiple shorter-stay candidates.
     \item \textbf{Multi-Type Specialization and Partial Pooling:} Tertiary hospitals partition critical care into specialized units---neonatal, pediatric, general adult, and coronary care---due to equipment and clinical skill barriers \cite{king2019modelling, guinsburg2016death}. While pediatric and neonatal pools are strictly segregated, adult medical and coronary care units (UCO) can partially share compatible adult patients during surge conditions \cite{Valeva_2023}.
 \end{enumerate}
 
-To capture these operational realities, this paper develops a continuous-time discrete-event simulation (DES) framework coupled with a retrospective mixed-integer linear programming (MILP) benchmark for multi-type ICU bed allocation. Our main contributions are:
+To capture these operational realities, this paper develops a continuous-time discrete-event simulation (DES) framework coupled with retrospective linear programming (LP) upper bounds for multi-type ICU bed allocation. Our main contributions are:
 \begin{itemize}
     \item \textbf{Dynamic Queueing Formulation with Deterioration and Severity-Coupled LOS:} We model a multi-pool $M/G/c+G$ critical care system where post-admission survival probability decays exponentially with waiting time and individual expected LOS scales with baseline severity, creating an explicit operational tension between marginal survival gain and bed-day consumption.
-    \item \textbf{Empirical Multi-Pool Calibration:} Physical bed capacities are parameterized from the Brazilian National Register of Healthcare Establishments (DATASUS/CNES) for the University Hospital of the Federal University of Maranh\~ao (HU-UFMA: 55 beds across adult, coronary, pediatric, and neonatal units) \cite{cnes_datasus_huufma}, while specialty-specific LOS distributions, baseline survival ranges, and boarding decay rates are calibrated from large-scale Brazilian intensive care cohorts (AMIB/Epimed, ORCHESTRA, and the Brazilian Neonatal Research Network) \cite{soares2024update, zampieri2019icu, guinsburg2016death, cardoso2011impact}.
-    \item \textbf{Comprehensive Policy Benchmarking and Offline Optimality Gap:} Using a 100-replication Common Random Numbers (CRN) design with steady-state warm-up and complete post-horizon cohort drainage, we compare six online rules---FCFS, Most Serious First (MSF), Least Serious First (LSF), Marginal Gain in Survival (MGS), a $c\mu$-type survival-rate index (CMU-MGS) \cite{buyukkoc1985cmu}, and an austere deterioration-rate index (AUSTERE) \cite{sun2018patient}---against a clairvoyant time-indexed LP/MILP upper bound.
-    \item \textbf{Parametric Regime Mapping, Pooling Ablation, and Imperfect Information Analysis:} Through systematic sensitivity experiments across severity--LOS coupling ($\beta$), queue deterioration ($\alpha_{\text{det}}$), adult--coronary overflow rules, and multi-parameter clinical estimation noise ($\sigma_{\text{noise}}$) \cite{argon2009priority}, we characterize the exact operational conditions under which duration-aware index rules outperform greedy triage.
+    \item \textbf{Transparent Multi-Pool Calibration:} Physical bed capacities are taken directly from the Brazilian National Register of Healthcare Establishments (DATASUS/CNES) for the University Hospital of the Federal University of Maranh\~ao (HU-UFMA: 55 beds across adult, coronary, pediatric, and neonatal units) \cite{cnes_datasus_huufma}, while specialty-specific LOS distributions and post-admission mortality rates are calibrated to match national Brazilian ICU registries (AMIB/Epimed, ORCHESTRA, and the Brazilian Neonatal Research Network) \cite{utisbrasileiras2024, soares2024orchestra, zampieri2019icu, guinsburg2016death, cardoso2011impact}, with an explicit separation between measured data, calibrated parameters, and counterfactual assumptions.
+    \item \textbf{Comprehensive Policy Benchmarking and Tightened LP Upper Bounds:} Using a 100-replication Common Random Numbers (CRN) design with steady-state warm-up and complete post-horizon cohort drainage, we compare six online rules---FCFS, Most Serious First (MSF), Least Serious First (LSF), Marginal Gain in Survival (MGS), a $c\mu$-type survival-rate index (CMU-MGS) \cite{buyukkoc1985cmu}, and a heuristic deadline-urgency extension (AUSTERE)---against both a clairvoyant hindsight LP bound (using realized $\text{LOS}_i$) and a tighter duration-expectation LP bound (using $\mathbb{E}[\text{LOS}_i]$ in the spirit of information relaxations \cite{brown2010information}).
+    \item \textbf{Parametric Regime Mapping, Reneging Payoff Sensitivity, and Imperfect Information Analysis:} Through systematic sensitivity experiments across positive and negative severity--LOS coupling ($\beta \in [-0.6, 2.4]$), queue deterioration ($\alpha_{\text{det}}$), reneging survival payoffs ($\theta_{\text{ren}} \in \{1.0, 0.5, 0.0\}$), adult--coronary overflow rules, and multi-parameter clinical estimation noise ($\sigma_{\text{noise}}$) \cite{argon2009priority}, we characterize the operational conditions under which duration-aware index rules outperform greedy triage.
 \end{itemize}
 
-The remainder of this paper is organized as follows. Section \ref{sec:works} reviews the operations research literature on ICU management and dynamic triage. Section \ref{sec:modeling} formalizes the queueing model, triage indices, and offline MILP upper bound. Section \ref{sec:experiments} details the empirical parameterization from CNES and national ICU registries. Section \ref{sec:results} presents the simulation results, offline optimality gaps, sensitivity heatmaps, and ablation studies. Section \ref{sec:limitations} discusses clinical, ethical, and methodological limitations, and Section \ref{sec:conclusion} concludes.
+The remainder of this paper is organized as follows. Section \ref{sec:works} reviews the operations research literature on ICU management and dynamic triage. Section \ref{sec:modeling} formalizes the queueing model, triage indices, and offline LP upper bounds. Section \ref{sec:experiments} details the empirical parameterization and calibration taxonomy. Section \ref{sec:results} presents the simulation results, offline optimality gaps, sensitivity analyses, and ablation studies. Section \ref{sec:limitations} discusses clinical, ethical, and methodological limitations, and Section \ref{sec:conclusion} concludes.
 
 \section{Related Work}
 \label{sec:works}
@@ -102,19 +102,19 @@ Bilbao \cite{Bilbao_2022} & DES / Flight Sim. & Single ICU + Ward & Gompertz / P
 Valeva et al. \cite{Valeva_2023} & Two-stage LP / DES & ICU + Step-down & Markovian & Exponential & Bed blocking & Acuity-based outflow LP & Stationary dual \\
 Frej et al. \cite{Frej_2023} & Static ILP / Utility & Single ICU & None (Batch) & Not modeled & No & Bayesian SOFA portfolio & Exact static ILP \\
 Murray et al. \cite{Murray_2023} & Time-Series / Surv. & Single ICU & ARIMA & Cox / Weibull (MODS) & No & Census forecasting & No \\
-\textbf{This Work} & \textbf{DES + MILP Bound} & \textbf{4 Pools (Coupled)} & \textbf{Continuous Poisson} & \textbf{Severity-Log-Normal} & \textbf{Exp. Decay + Reneging} & \textbf{FCFS, MSF, LSF, MGS, CMU, AUSTERE} & \textbf{Time-indexed LP/MILP} \\
+\textbf{This Work} & \textbf{DES + LP Bounds} & \textbf{4 Pools (Coupled)} & \textbf{Continuous Poisson} & \textbf{Severity-Log-Normal} & \textbf{Exp. Decay + Reneging} & \textbf{FCFS, MSF, LSF, MGS, CMU, AUSTERE} & \textbf{Time-indexed LP Bounds} \\
 \bottomrule
 \end{tabular}
 }
 \end{table*}
 
-A foundational stream of OR/MS research examines how ICU congestion shapes admission and discharge decisions. Chan et al. \cite{chan2012optimizing} formulated an optimization model for demand-driven early ICU discharge, Accounting for post-discharge readmission risks and deriving an index policy that prioritizes discharging patients with low marginal readmission cost per bed-day freed. Kim et al. \cite{kim2015association} conducted an econometric and simulation study of 15 Kaiser Permanente hospitals, demonstrating that ICU occupancy at arrival significantly alters admission probability and that boarding delays measurably worsen patient outcomes. More recently, Valeva et al. \cite{Valeva_2023} analyzed the interaction between ICUs and downstream step-down units under flexible staffing, deriving dual-based acuity policies to mitigate bed blocking, while Bilbao \cite{Bilbao_2022} and Murray et al. \cite{Murray_2023} combined survival analysis with arrival forecasting to predict short-term ICU census.
+A foundational stream of OR/MS research examines how ICU congestion shapes admission and discharge decisions. Chan et al. \cite{chan2012optimizing} formulated an optimization model for demand-driven early ICU discharge, accounting for post-discharge readmission risks and deriving an index policy that prioritizes discharging patients with low marginal readmission cost per bed-day freed. Kim et al. \cite{kim2015association} conducted an econometric and simulation study of 15 Kaiser Permanente hospitals, demonstrating that ICU occupancy at arrival significantly alters admission probability and that boarding delays measurably worsen patient outcomes. More recently, Valeva et al. \cite{Valeva_2023} analyzed the interaction between ICUs and downstream step-down units under flexible staffing, deriving dual-based acuity policies to mitigate bed blocking, while Bilbao \cite{Bilbao_2022} and Murray et al. \cite{Murray_2023} combined survival analysis with arrival forecasting to predict short-term ICU census.
 
 A second stream investigates casualty and critical care triage under acute resource scarcity, drawing heavily on the $c\mu$ scheduling rule \cite{buyukkoc1985cmu} and queueing systems with impatient or deteriorating customers. Argon and Ziya \cite{argon2009priority} studied priority assignment when customer types are observed imperfectly, showing that classification noise degrades multi-class rules and favors robust index structures. Mills et al. \cite{mills2013resource} modeled mass-casualty prioritization across multiple bottleneck resources, showing that fluid-based dynamic indices accounting for both survival deterioration and resource processing rates outperform static color-tag triage (such as Simple Triage and Rapid Treatment). Closest to our clinical triage focus, Sun et al. \cite{sun2018patient} analyzed patient prioritization under austere conditions where queued patients transition between severity states and may abandon (die) before service. They proved that optimal prioritization balances the immediate marginal survival reward against expected service time and the hazard of clinical deterioration.
 
 During the COVID-19 pandemic, several studies addressed hospital surge allocation. Alban et al. \cite{Alban_2020} built a discrete-event simulation (\textit{icu-covid-sim}) to project regional overflow probabilities. White and Lo \cite{White_2021} and Aquino et al. \cite{aquino2022ethical} evaluated ethical multi-principle frameworks combining short-term prognosis with equity considerations. In the Brazilian context, Frej et al. \cite{Frej_2021, Frej_2023} proposed a binary portfolio optimization model using Expected Utility Theory and SOFA scores to select which candidates occupy open beds.
 
-Despite these advances, Table \ref{tab:lit_comparison} highlights an important methodological gap. Analytical triage models such as Sun et al. \cite{sun2018patient} and Mills et al. \cite{mills2013resource} rely on exponential service times and single-pool or clearing formulations to preserve mathematical tractability, whereas utility-based models like Frej et al. \cite{Frej_2023} omit continuous arrivals, bed turnover, and queue waiting decay entirely. Conversely, multi-unit hospital simulations typically apply simple FCFS or threshold rules without benchmarking $c\mu$-type indices or quantifying the optimality gap against a retrospective mathematical programming bound. Our work bridges this gap by embedding $c\mu$ and austere deterioration-rate indices within a continuous-time, multi-specialty hospital simulation calibrated with empirical Brazilian intensive care data, while evaluating their distance to an offline time-indexed LP/MILP upper bound.
+Despite these advances, Table \ref{tab:lit_comparison} highlights an important methodological gap. Analytical triage models such as Sun et al. \cite{sun2018patient} and Mills et al. \cite{mills2013resource} rely on exponential service times and single-pool or clearing formulations to preserve mathematical tractability, whereas utility-based models like Frej et al. \cite{Frej_2023} omit continuous arrivals, bed turnover, and queue waiting decay entirely. Conversely, multi-unit hospital simulations typically apply simple FCFS or threshold rules without benchmarking $c\mu$-type indices or quantifying the optimality gap against retrospective mathematical programming bounds. Our work bridges this gap by embedding $c\mu$ and deadline-urgency indices within a continuous-time, multi-specialty hospital simulation calibrated with Brazilian intensive care registry targets, while evaluating their distance to both hindsight and duration-expectation time-indexed LP upper bounds.
 
 \section{Dynamic Simulation and Optimization Modeling}
 \label{sec:modeling}
@@ -132,33 +132,34 @@ where:
 \begin{itemize}
     \item $j(i) \in J$ is the patient's primary clinical specialty;
     \item $t_{\text{arr}}^i \ge 0$ is the arrival epoch;
-    \item $P_{\text{out}}^i \in (0, 1)$ is the baseline probability of hospital survival if the patient is never admitted to an ICU bed (managed in general or emergency holding wards);
+    \item $P_{\text{out}}^i \in (0, 1)$ is the baseline probability of hospital survival if the patient is never admitted to an ICU bed and is managed in general or step-down wards;
     \item $P_{\text{in},0}^i \in [P_{\text{out}}^i, 1)$ is the initial probability of survival if admitted immediately upon arrival ($w_i = 0$), parameterized as $P_{\text{in},0}^i = P_{\text{out}}^i + (1 - P_{\text{out}}^i) g_i$, where $g_i \in (0, 1)$ is the fractional therapeutic efficacy of ICU care;
     \item $\alpha_{\text{det}}^{j(i)} > 0$ is the specialty-specific clinical deterioration rate ($\text{day}^{-1}$) during pre-ICU queue boarding;
     \item $\mathbb{E}[\text{LOS}_i] > 0$ and $\text{LOS}_i > 0$ are the expected and realized ICU lengths of stay (in days) once admitted;
-    \item $W_{\max}^i > 0$ is the finite queue waiting tolerance (deadline in days) before clinical reneging (pre-ICU death, emergency transfer, or loss of therapeutic window);
+    \item $W_{\max}^i > 0$ is the finite queue waiting tolerance (deadline in days) before clinical reneging (which in hospital operations may represent emergency transfer, clinical stabilization/withdrawal of ICU request in a ward, or pre-ICU death);
     \item $u_i \sim \text{Uniform}(0, 1)$ is an independent uniform random variate used to realize binary survival outcomes under Common Random Numbers.
 \end{itemize}
 
-\subsubsection{Waiting-Time Clinical Deterioration}
-Clinical studies consistently show that each hour of delayed ICU transfer increases mortality risk due to progression of shock and organ dysfunction \cite{cardoso2011impact, kim2015association}. If patient $i$ waits $w = t - t_{\text{arr}}^i \in [0, W_{\max}^i]$ days in the pre-ICU queue before admission at time $t$, the post-admission survival probability decays exponentially toward the baseline floor survival $P_{\text{out}}^i$:
+\subsubsection{Waiting-Time Clinical Deterioration and Reneging Payoff}
+Clinical studies consistently show that each hour of delayed ICU transfer increases mortality risk due to progression of shock and organ dysfunction \cite{cardoso2011impact, kim2015association}. If patient $i$ waits $w = t - t_{\text{arr}}^i \in [0, W_{\max}^i]$ days in the pre-ICU queue before admission at time $t$, the post-admission survival probability decays exponentially toward the baseline ward survival $P_{\text{out}}^i$:
 \begin{equation}
     P_{\text{in}}^i(w) = P_{\text{out}}^i + \left( P_{\text{in},0}^i - P_{\text{out}}^i \right) \exp\!\left( -\alpha_{\text{det}}^{j(i)} w \right)
     \label{eq:deterioration}
 \end{equation}
-Consequently, the instantaneous marginal survival gain of admitting patient $i$ after waiting time $w = t - t_{\text{arr}}^i$ is:
+If patient $i$ is not admitted within $W_{\max}^i$ days, the patient reneges from the queue at epoch $t_{\text{arr}}^i + W_{\max}^i$. To account for the fact that queue abandonment may represent a mixture of ward management/transfer (survival $P_{\text{out}}^i$) and pre-ICU mortality (survival $0$), we parameterize the expected survival payoff of a reneging patient as $\theta_{\text{ren}} P_{\text{out}}^i$, where $\theta_{\text{ren}} \in [0, 1]$ is the reneging survival retention factor. In the baseline model ($\theta_{\text{ren}} = 1.0$), reneging patients receive the ward survival probability $P_{\text{out}}^i$, and the instantaneous marginal survival gain of admitting patient $i$ after waiting time $w = t - t_{\text{arr}}^i$ is:
 \begin{equation}
     \Delta P_i(w) = P_{\text{in}}^i(w) - P_{\text{out}}^i = \left( P_{\text{in},0}^i - P_{\text{out}}^i \right) \exp\!\left( -\alpha_{\text{det}}^{j(i)} w \right)
     \label{eq:marginal_gain}
 \end{equation}
+When $\theta_{\text{ren}} < 1.0$ (analyzed in Section \ref{sec:reneging_sensitivity}), avoiding a reneging event yields the larger net survival increment $P_{\text{in}}^i(w) - \theta_{\text{ren}} P_{\text{out}}^i = \Delta P_i(w) + (1 - \theta_{\text{ren}}) P_{\text{out}}^i$.
 
 \subsubsection{Severity-Correlated Length of Stay}
-To reflect the clinical reality that patients with higher acute physiological severity require longer organ support \cite{zampieri2019icu, soares2024update}, the individual expected stay $\mathbb{E}[\text{LOS}_i]$ is coupled to the patient's baseline mortality risk $1 - P_{\text{out}}^i$:
+To reflect the clinical relationship between acute physiological severity and duration of organ support \cite{zampieri2019icu, soares2024update}, the individual expected stay $\mathbb{E}[\text{LOS}_i]$ is coupled to the patient's baseline mortality risk $1 - P_{\text{out}}^i$:
 \begin{equation}
     \mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j(i)} \cdot \max\!\left\{ 0.35,\; 1 + \beta \Big( (1 - P_{\text{out}}^i) - \mathbb{E}[1 - P_{\text{out}}^{j(i)}] \Big) \right\}
     \label{eq:sev_los}
 \end{equation}
-where $\mu_{\text{los}, j}$ is the empirical mean LOS of specialty $j$, $\mathbb{E}[1 - P_{\text{out}}^j]$ is the mean baseline severity in specialty $j$, and $\beta \ge 0$ governs the strength of the severity--duration coupling. Centering the multiplier around $\mathbb{E}[1 - P_{\text{out}}^j]$ ensures that the unconditional mean stay across arriving patients in pool $j$ equals $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$, preserving exact traffic intensity scaling across all values of $\beta$.
+where $\mu_{\text{los}, j}$ is the empirical mean LOS of specialty $j$, $\mathbb{E}[1 - P_{\text{out}}^j]$ is the mean baseline severity in specialty $j$, and $\beta \in \mathbb{R}$ governs the direction and strength of the severity--duration coupling ($\beta > 0$ when higher severity prolongs stay among survivors; $\beta < 0$ when extreme severity leads to shorter stays due to early in-ICU mortality). Because $P_{\text{out}}^i$ spans a width of $0.40$ in every pool (Table \ref{tab:calibration_params}), the centered deviation $(1 - P_{\text{out}}^i) - \mathbb{E}[1 - P_{\text{out}}^j]$ lies strictly in $[-0.20, +0.20]$. Consequently, for all $|\beta| \le 2.4$ considered in this study, the linear factor $1 + \beta((1 - P_{\text{out}}^i) - \mathbb{E}[1 - P_{\text{out}}^j])$ is bounded below by $1 - 2.4(0.20) = 0.52 > 0.35$. Thus, the safety floor of $0.35$ is never active for $|\beta| \le 2.4$, guaranteeing mathematically that the unconditional mean stay across arriving patients in pool $j$ is \textit{exact}: $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$.
 
 Given $\mathbb{E}[\text{LOS}_i]$ and the specialty's coefficient of variation $CV_{\text{los}, j}$, the realized stay $\text{LOS}_i$ follows a Log-Normal distribution $\text{LogNormal}(\mu_i, \sigma_{j}^2)$ with exact log-scale parameters:
 \begin{equation}
@@ -167,12 +168,13 @@ Given $\mathbb{E}[\text{LOS}_i]$ and the specialty's coefficient of variation $C
 \end{equation}
 
 \subsubsection{Hierarchical Multi-Pool Compatibility and Overflow}
+\label{sec:overflow_rules}
 Pediatric ($j = \text{pediatric}$) and neonatal ($j = \text{neonatal}$) units require dedicated ventilators, incubators, and subspecialty nursing, operating as strictly segregated pools. Conversely, general adult ICU beds ($j = \text{adult}$) and adult coronary care beds ($j = \text{coronary}$) share adult life-support infrastructure and can operate under a hierarchical partial-pooling (overflow) protocol:
 \begin{enumerate}[(1)]
     \item \textbf{Primary Home-Pool Priority:} When a bed in pool $j \in \{\text{adult}, \text{coronary}\}$ becomes vacant at time $t$, if the native queue $\mathcal{Q}_j(t) \ne \emptyset$, the bed is assigned exclusively to the highest-priority candidate in $\mathcal{Q}_j(t)$ according to active triage policy $\pi$.
     \item \textbf{Secondary Cross-Pool Overflow:} If the native queue is empty ($\mathcal{Q}_j(t) = \emptyset$) and the coupled adult pool $j' \in \{\text{adult}, \text{coronary}\} \setminus \{j\}$ has waiting candidates ($\mathcal{Q}_{j'}(t) \ne \emptyset$), the vacant bed in $j$ admits the highest-priority patient from $\mathcal{Q}_{j'}(t)$ under policy $\pi$. Similarly, an arriving adult or coronary patient finding their native unit full is immediately admitted to the partner unit if an idle bed is available there.
 \end{enumerate}
-Because cross-pool admission occurs only when the home queue is empty, native and overflow candidates never compete simultaneously for the same bed vacancy; within any non-empty queue, candidates are ordered strictly by policy score $s_i^\pi(t)$.
+Because cross-pool admission occurs only when the home queue is empty, candidates from different specialty pools never compete simultaneously for the same bed vacancy; within any non-empty queue, candidates belong to the same specialty and are ordered strictly by policy score $s_i^\pi(t)$.
 
 \subsection{Online Triage Policies}
 
@@ -207,27 +209,27 @@ We evaluate six online prioritization policies:
     \end{equation}
 
     \item \textbf{Marginal Gain in Survival (MGS):}
-    Prioritizes candidates with the largest instantaneous incremental survival benefit from ICU admission:
+    Prioritizes candidates with the largest instantaneous incremental survival benefit from ICU admission (incorporating any additional reneging survival loss when $\theta_{\text{ren}} < 1$):
     \begin{equation}
-        s_i^{\text{MGS}}(t) = \Delta P_i(t - t_{\text{arr}}^i) = P_{\text{in}}^i(t - t_{\text{arr}}^i) - P_{\text{out}}^i
+        s_i^{\text{MGS}}(t) = P_{\text{in}}^i(t - t_{\text{arr}}^i) - \theta_{\text{ren}} P_{\text{out}}^i
         \label{eq:mgs}
     \end{equation}
 
     \item \textbf{Benefit-per-Bed-Day Index (CMU-MGS):}
     Motivated by the classical $c\mu$ scheduling rule \cite{buyukkoc1985cmu, mills2013resource}, CMU-MGS normalizes the instantaneous marginal survival gain by the patient's expected bed-days $\mathbb{E}[\text{LOS}_i]$:
     \begin{equation}
-        s_i^{\text{CMU-MGS}}(t) = \frac{\Delta P_i(t - t_{\text{arr}}^i)}{\max\left(0.2,\; \mathbb{E}[\text{LOS}_i]\right)}
+        s_i^{\text{CMU-MGS}}(t) = \frac{P_{\text{in}}^i(t - t_{\text{arr}}^i) - \theta_{\text{ren}} P_{\text{out}}^i}{\max\left(0.2,\; \mathbb{E}[\text{LOS}_i]\right)}
         \label{eq:cmu_mgs}
     \end{equation}
     CMU-MGS maximizes the rate of expected lives saved per unit of bottleneck bed capacity consumed.
 
-    \item \textbf{Austere Deterioration-Rate Index (AUSTERE):}
-    Adapted from the austere-conditions triage theory of Sun et al. \cite{sun2018patient}, this policy prioritizes patients according to the expected marginal survival loss incurred if admission is delayed, normalized by expected service duration $\mathbb{E}[\text{LOS}_i]$. A waiting patient experiences both continuous exponential decay at rate $\alpha_{\text{det}}^{j(i)}$ and an increasing hazard of hitting the reneging deadline $\tau_i(t) = \max\left(0.25,\; t_{\text{arr}}^i + W_{\max}^i - t\right)$:
+    \item \textbf{CMU-MGS with Heuristic Deadline Urgency (AUSTERE):}
+    Motivated qualitatively by the observation in austere-conditions triage \cite{sun2018patient} that queued patients face an approaching abandonment deadline, we also evaluate a heuristic deadline-urgency extension of CMU-MGS. Because candidates from different pools never compete against one another (Section \ref{sec:overflow_rules}), any pool-constant deterioration parameter $\alpha_{\text{det}}^{j(i)}$ is invariant across competing candidates in $\mathcal{Q}_j(t)$ and is therefore omitted. Let $\tau_i(t) = \max\left(\tau_{\min},\; t_{\text{arr}}^i + W_{\max}^i - t\right)$ denote the floored remaining time to patient $i$'s reneging deadline. The heuristic score multiplies CMU-MGS by a bounded deadline-urgency factor:
     \begin{equation}
-        s_i^{\text{AUST}}(t) = \frac{\Delta P_i(t - t_{\text{arr}}^i)}{\max(0.2, \mathbb{E}[\text{LOS}_i])} \left( 1 + \alpha_{\text{det}}^{j(i)} + \frac{0.5}{\tau_i(t) + 0.5} \right)
+        s_i^{\text{AUST}}(t) = s_i^{\text{CMU-MGS}}(t) \left( 1 + \frac{\kappa}{\tau_i(t) + \kappa} \right)
         \label{eq:austere}
     \end{equation}
-    Unlike unbounded reciprocal deadline rules, Eq. (\ref{eq:austere}) bounds the urgency multiplier smoothly, balancing bed turnover efficiency against imminent clinical deterioration.
+    with baseline smoothing constants $\tau_{\min} = 0.25$ days and $\kappa = 0.5$ days (so that the urgency weight increases smoothly from $\approx 1.17$ for newly arrived patients to $1.67$ as the deadline approaches). We emphasize that Eq. (\ref{eq:austere}) is a heuristic benchmark rather than an MDP-optimal index; shifting $(\tau_{\min}, \kappa)$ merely interpolates between pure CMU-MGS ($\kappa \to 0$) and aggressive deadline-first ordering ($\kappa \gg 1$, which degrades survival by admitting long-stay candidates solely because their tolerance $W_{\max}^i$ is expiring).
 \end{enumerate}
 
 \subsubsection{Triage Under Imperfect Clinical Information}
@@ -247,13 +249,18 @@ System performance over $\mathcal{I}_{\text{eval}}$ is quantified by:
 \begin{itemize}
     \item \textbf{Expected Survivors:}
     \begin{equation}
-        S_{\text{exp}}^{\pi} = \sum_{i \in \mathcal{A}^{\pi}} P_{\text{in}}^i\!\left(t_{\text{adm}}^i - t_{\text{arr}}^i\right) + \sum_{i \in \mathcal{R}^{\pi}} P_{\text{out}}^i
+        S_{\text{exp}}^{\pi} = \sum_{i \in \mathcal{A}^{\pi}} P_{\text{in}}^i\!\left(t_{\text{adm}}^i - t_{\text{arr}}^i\right) + \sum_{i \in \mathcal{R}^{\pi}} \theta_{\text{ren}} P_{\text{out}}^i
         \label{eq:expected_survivors}
     \end{equation}
     \item \textbf{Realized Survivors:}
     \begin{equation}
-        S_{\text{real}}^{\pi} = \sum_{i \in \mathcal{A}^{\pi}} \mathbb{I}\!\left(u_i < P_{\text{in}}^i(t_{\text{adm}}^i - t_{\text{arr}}^i)\right) + \sum_{i \in \mathcal{R}^{\pi}} \mathbb{I}\!\left(u_i < P_{\text{out}}^i\right)
+        S_{\text{real}}^{\pi} = \sum_{i \in \mathcal{A}^{\pi}} \mathbb{I}\!\left(u_i < P_{\text{in}}^i(t_{\text{adm}}^i - t_{\text{arr}}^i)\right) + \sum_{i \in \mathcal{R}^{\pi}} \mathbb{I}\!\left(u_i < \theta_{\text{ren}} P_{\text{out}}^i\right)
         \label{eq:realized_survivors}
+    \end{equation}
+    \item \textbf{In-Hospital Mortality Rate of Admitted Patients:} To verify internal clinical consistency against ICU registry mortality reports (which measure mortality exclusively among admitted ICU patients), we record the expected mortality rate among admitted patients in pool $j$:
+    \begin{equation}
+        M_{\text{adm}, j}^{\pi} = \frac{1}{|\mathcal{A}_j^{\pi}|} \sum_{i \in \mathcal{A}_j^{\pi}} \Big( 1 - P_{\text{in}}^i(t_{\text{adm}}^i - t_{\text{arr}}^i) \Big)
+        \label{eq:admitted_mortality}
     \end{equation}
     \item \textbf{Disaggregated Waiting Times and Reneging Rate:} We report the reneging rate $r_{\text{ren}}^{\pi} = |\mathcal{R}^{\pi}| / N_{\text{eval}}$, the mean waiting time of admitted patients $\bar{W}_{\text{adm}}^{\pi} = \frac{24}{|\mathcal{A}^{\pi}|}\sum_{i \in \mathcal{A}^{\pi}} (t_{\text{adm}}^i - t_{\text{arr}}^i)$ (in hours), and the mean waiting time prior to abandonment for reneged patients $\bar{W}_{\text{ren}}^{\pi} = \frac{24}{|\mathcal{R}^{\pi}|}\sum_{i \in \mathcal{R}^{\pi}} W_{\max}^i$.
     \item \textbf{Steady-State Time-Weighted Occupancy:} Measured strictly over the steady-state observation window $[T_{\text{warm}}, T_{\text{warm}} + T)$:
@@ -264,115 +271,131 @@ System performance over $\mathcal{I}_{\text{eval}}$ is quantified by:
     where $B_j^{\pi}(t) \in \{0, 1, \dots, C_j\}$ is the number of occupied beds in pool $j$ at time $t$.
 \end{itemize}
 
-\subsection{Hindsight Time-Indexed MILP Upper Bound}
+\subsection{Policy-Independent Time-Indexed LP Upper Bounds}
 \label{sec:milp_bound}
 
-To measure how close online heuristics come to the theoretical maximum survival achievable under complete future knowledge, we formulate a clairvoyant (offline) time-indexed mathematical program for each replication. Let time be discretized into slots $s \in \mathcal{S} = \{0, 1, \dots, S_{\max}\}$ of length $\Delta t = 0.5$ days. For each pool group $g$ with capacity $C_g$ and each patient $i$ arriving at slot $s_{\text{arr}}^i = \lfloor t_{\text{arr}}^i / \Delta t \rfloor$ with stay duration $L_i = \max(1, \lfloor \text{LOS}_i / \Delta t \rfloor)$ slots and maximum wait $K_i = \lceil W_{\max}^i / \Delta t \rceil$ slots, let binary decision variable $x_{i,k} \in \{0, 1\}$ indicate whether patient $i$ is admitted after waiting $k \in \{0, 1, \dots, K_i\}$ slots (at slot $s = s_{\text{arr}}^i + k$). The hindsight upper bound $S_{\text{UB}}$ is obtained by solving:
-\begin{align}
-    \max_{x} \quad & \sum_{i \in \mathcal{I}_{\text{eval}}} P_{\text{out}}^i + \sum_{i \in \mathcal{I}_{\text{eval}}} \sum_{k=0}^{K_i} \Delta P_i\!\left(\min(W_{\max}^i, k\Delta t)\right) x_{i,k} \label{eq:milp_obj} \\
-    \text{s.t.} \quad & \sum_{k=0}^{K_i} x_{i,k} \le 1, \qquad \forall i \label{eq:milp_assign} \\
-    & \sum_{i \in \mathcal{I}_g} \sum_{\substack{k=0 \\ s - L_i < s_{\text{arr}}^i + k \le s}}^{K_i} x_{i,k} \le C_g, \qquad \forall g, \; \forall s \in \mathcal{S} \label{eq:milp_cap} \\
-    & x_{i,k} \in [0, 1], \qquad \forall i, k \label{eq:milp_domain}
-\end{align}
-Constraint (\ref{eq:milp_assign}) ensures each patient is admitted at most once within their clinical tolerance window, while Constraint (\ref{eq:milp_cap}) enforces bed capacity $C_g$ across all active time slots $s$ (including boundary occupation from warm-up arrivals). Solving the linear programming relaxation (\ref{eq:milp_obj})--(\ref{eq:milp_domain}) via the HiGHS interior-point/simplex solver yields a valid, strict upper bound $S_{\text{UB}} \ge S_{\text{exp}}^{\pi}$ on any online or offline non-preemptive policy.
+To benchmark online policies against theoretical upper bounds without tying the benchmark to the trajectory of any single rule, we formulate two policy-independent time-indexed linear programming (LP) relaxations for each replication. We clarify three structural properties that guarantee the validity of these bounds across \textit{all} online policies:
+\begin{enumerate}[(a)]
+    \item \textbf{Policy-Independent Initial State at $T_{\text{warm}}$:} Different online policies $\pi$ arrive at the end of the warm-up period $T_{\text{warm}}$ with different sets of legacy patients occupying beds. If an offline program enforced the legacy bed occupation of a specific policy (e.g., FCFS), it would not be a valid bound for policies that arrived at $T_{\text{warm}}$ with fewer occupied beds. Therefore, the LP optimizes strictly over the evaluated cohort $\mathcal{I}_{\text{eval}}$ starting from an \textit{empty} bed state at $t = T_{\text{warm}}$ (zero legacy occupation from $[0, T_{\text{warm}})$). Because every online policy $\pi$ faces non-negative bed occupation inherited from the warm-up period on $[T_{\text{warm}}, T_{\text{warm}} + T)$, dropping warm-up occupancy strictly enlarges the feasible capacity region for $\mathcal{I}_{\text{eval}}$, yielding a policy-independent relaxation valid for every $\pi$.
+    \item \textbf{Full Adult--Coronary Pooling and Complete Drainage Horizon:} When adult--coronary overflow is enabled, the LP relaxes the hierarchical home-pool priority into a single combined group $g_{\text{adult+coronary}}$ with capacity $C_{\text{adult+coronary}} = 15 + 10 = 25$ beds, alongside $C_{\text{pediatric}} = 10$ and $C_{\text{neonatal}} = 20$. Time is discretized into slots $s \in \mathcal{S} = \{0, 1, \dots, S_{\max}\}$ of length $\Delta t = 0.5$ days starting at $T_{\text{warm}}$, where $S_{\max} = \max_{i \in \mathcal{I}_{\text{eval}}} \{ s_{\text{arr}}^i + K_i + L_i \} + 2$ is set dynamically so that $\mathcal{S}$ covers $100\%$ of post-horizon queue drainage and patient stays.
+    \item \textbf{Hindsight LP Bound vs. Duration-Expectation LP Bound:} A hindsight LP that uses realized stays $\text{LOS}_i$ enjoys perfect clairvoyance over random log-normal stay realizations, allowing it to selectively admit patients who happen to draw ultra-short realized stays ($\text{LOS}_i \ll \mathbb{E}[\text{LOS}_i]$). In the spirit of information relaxations for stochastic dynamic programs \cite{brown2010information}, we decouple arrival-stream knowledge from service-duration clairvoyance by solving two LP bounds:
+    \begin{itemize}
+        \item \textit{Hindsight LP Bound ($S_{\text{UB}}^{\text{real}}$):} Uses each patient's realized stay $L_i^{\text{real}} = \max(1, \lfloor \text{LOS}_i / \Delta t \rfloor)$ slots.
+        \item \textit{Duration-Expectation LP Bound ($S_{\text{UB}}^{\text{exp}}$):} Uses each patient's expected stay $L_i^{\text{exp}} = \max(1, \lfloor \mathbb{E}[\text{LOS}_i] / \Delta t \rfloor)$ slots, restricting the offline planner to the exact same duration information $\mathbb{E}[\text{LOS}_i]$ available to online policies at triage.
+    \end{itemize}
+\end{enumerate}
 
-\section{Experimental Design and Empirical Calibration}
+For a given stay-slot vector $L_i \in \{L_i^{\text{real}}, L_i^{\text{exp}}\}$, arrival slot $s_{\text{arr}}^i = \lfloor (t_{\text{arr}}^i - T_{\text{warm}}) / \Delta t \rfloor$, maximum wait $K_i = \lceil W_{\max}^i / \Delta t \rceil$, and fractional admission variable $x_{i,k} \in [0, 1]$ at wait slot $k \in \{0, 1, \dots, K_i\}$, the LP upper bound solves:
+\begin{align}
+    \max_{x} \quad & \sum_{i \in \mathcal{I}_{\text{eval}}} \theta_{\text{ren}} P_{\text{out}}^i + \sum_{i \in \mathcal{I}_{\text{eval}}} \sum_{k=0}^{K_i} \Big[ \Delta P_i\!\big(\min(W_{\max}^i, k\Delta t)\big) \nonumber \\
+    & \hspace{8.5em} + (1 - \theta_{\text{ren}}) P_{\text{out}}^i \Big] x_{i,k} \label{eq:milp_obj} \\
+    \text{s.t.} \quad & \sum_{k=0}^{K_i} x_{i,k} \le 1, \qquad \forall i \in \mathcal{I}_{\text{eval}} \label{eq:milp_assign} \\
+    & \sum_{i \in \mathcal{I}_g} \sum_{\substack{k=0 \\ s - L_i < s_{\text{arr}}^i + k \le s}}^{K_i} x_{i,k} \le C_g, \qquad \forall g, \; \forall s \in \mathcal{S} \label{eq:milp_cap} \\
+    & x_{i,k} \in [0, 1], \qquad \forall i \in \mathcal{I}_{\text{eval}}, \; \forall k \in \{0, \dots, K_i\} \label{eq:milp_domain}
+\end{align}
+where $\Delta P_i(\min(W_{\max}^i, k\Delta t))$ denotes the marginal survival gain function of Eq. (\ref{eq:marginal_gain}) evaluated at waiting duration $w = \min(W_{\max}^i, k\Delta t)$. We solve the continuous LP relaxation (\ref{eq:milp_obj})--(\ref{eq:milp_domain}) directly via the HiGHS solver.
+
+\section{Experimental Design and Calibration Taxonomy}
 \label{sec:experiments}
 
-\subsection{Hospital Bed Capacities and Epidemiological Calibration}
+\subsection{Measured Registry Data vs. Calibrated and Counterfactual Parameters}
 
-To ground the simulation in real-world public healthcare operations without relying on arbitrary synthetic parameters, we combine facility-level bed data from the University Hospital of the Federal University of Maranh\~ao (HU-UFMA / EBSERH) with specialty-specific clinical parameters from multicenter Brazilian intensive care registries (Table \ref{tab:calibration_params}).
+A central methodological requirement in healthcare simulation is distinguishing quantities directly measured in hospital registries from parameters calibrated to reproduce aggregate clinical targets and counterfactual quantities that cannot be observed in admitted-only databases. Table \ref{tab:calibration_params} presents the multi-pool parameterization for HU-UFMA, explicitly classifying every parameter into three epistemological categories: (I) \textit{Measured}, (II) \textit{Calibrated/Derived}, and (III) \textit{Assumed (Counterfactual/Sensitivity)}.
 
 \begin{table*}[t]
 \centering
-\caption{Empirical multi-pool calibration from DATASUS/CNES (HU-UFMA, competency 12/2024) and national Brazilian intensive care registries.}
+\caption{Multi-pool parameterization for HU-UFMA (DATASUS/CNES competency 12/2024) and Brazilian ICU registries, separating directly measured registry quantities, calibrated/derived parameters, and counterfactual assumptions, alongside model-generated admitted mortality verification.}
 \label{tab:calibration_params}
 \resizebox{\textwidth}{!}{
-\begin{tabular}{llcccccc}
+\begin{tabular}{llccccccc}
 \toprule
-\textbf{Bed Pool ($j$)} & \textbf{CNES Code / Specialty} & \textbf{Beds ($C_j$)} & \textbf{Mean LOS ($\mu_{\text{los}, j}$)} & \textbf{LOS $CV_j$} & \textbf{Baseline Survival ($P_{\text{out}}^i$)} & \textbf{ICU Efficacy ($g_i$)} & \textbf{Queue Decay ($\alpha_{\text{det}}^j$, $W_{\max}^i$)} \\
+ & & \multicolumn{2}{c}{\textbf{(I) Measured (Registry Data)}} & \multicolumn{3}{c}{\textbf{(II) Calibrated / Derived to Match Registry}} & \multicolumn{2}{c}{\textbf{(III) Assumed (Counterfactual)}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-7} \cmidrule(lr){8-9}
+\textbf{Bed Pool ($j$)} & \textbf{CNES Code / Specialty} & \textbf{Beds ($C_j$)} & \textbf{Mean LOS ($\mu_{\text{los}, j}$, $CV_j$)} & \textbf{Decay ($\alpha_{\text{det}}^j$)} & \textbf{Registry Mort. Target} & \textbf{Model Adm. Mort. ($\rho=1.0$ / $1.6$)} & \textbf{Ward Surv. ($P_{\text{out}}^i$)} & \textbf{ICU Efficacy ($g_i$), $W_{\max}^i$} \\
 \midrule
-\textbf{Adult ICU} & 76 -- UTI Adulto Tipo III & $15$ & $6.5$ days & $0.65$ & $U(0.10, 0.55)$ & $U(0.25, 0.75)$ & $0.18\text{ d}^{-1}$, $U(0.5, 2.5)\text{ d}$ \\
-\textbf{Coronary (UCO)} & 86 -- UCO Tipo III & $10$ & $4.8$ days & $0.55$ & $U(0.20, 0.65)$ & $U(0.30, 0.80)$ & $0.20\text{ d}^{-1}$, $U(0.5, 2.0)\text{ d}$ \\
-\textbf{Pediatric ICU} & 79 -- UTI Pedi\'atrica Tipo III & $10$ & $6.0$ days & $0.65$ & $U(0.25, 0.70)$ & $U(0.35, 0.85)$ & $0.15\text{ d}^{-1}$, $U(0.5, 2.5)\text{ d}$ \\
-\textbf{Neonatal ICU} & 81 -- UTI Neonatal Tipo II & $20$ & $11.5$ days & $0.75$ & $U(0.15, 0.65)$ & $U(0.30, 0.85)$ & $0.20\text{ d}^{-1}$, $U(0.5, 2.0)\text{ d}$ \\
+\textbf{Adult ICU} & 76 -- UTI Adulto Tipo III & $15$ & $6.5\text{ d}$ ($0.65$) & $0.18\text{ d}^{-1}$ & $\approx 26\%$--$28\%$ \cite{utisbrasileiras2024, soares2024orchestra} & $25.3\%$ / $25.5\%$ (FCFS: $26.1\%$ / $30.2\%$) & $U(0.15, 0.55)$ & $U(0.45, 0.75)$, $U(0.5, 2.5)\text{ d}$ \\
+\textbf{Coronary (UCO)} & 86 -- UCO Tipo III & $10$ & $4.8\text{ d}$ ($0.55$) & $0.20\text{ d}^{-1}$ & $\approx 14\%$--$17\%$ \cite{utisbrasileiras2024, soares2024update} & $15.2\%$ / $16.3\%$ (FCFS: $15.8\%$ / $19.1\%$) & $U(0.30, 0.70)$ & $U(0.55, 0.85)$, $U(0.5, 2.0)\text{ d}$ \\
+\textbf{Pediatric ICU} & 79 -- UTI Pedi\'atrica Tipo III & $10$ & $6.0\text{ d}$ ($0.65$) & $0.15\text{ d}^{-1}$ & $\approx 5\%$--$8\%$ \cite{utisbrasileiras2024} & $6.8\%$ / $8.0\%$ (FCFS: $7.2\%$ / $9.5\%$) & $U(0.50, 0.90)$ & $U(0.65, 0.90)$, $U(0.5, 2.5)\text{ d}$ \\
+\textbf{Neonatal ICU} & 81 -- UTI Neonatal Tipo II & $20$ & $11.5\text{ d}$ ($0.75$) & $0.20\text{ d}^{-1}$ & $\approx 8\%$--$11\%$ \cite{utisbrasileiras2024, guinsburg2016death} & $8.6\%$ / $10.0\%$ (FCFS: $9.0\%$ / $11.8\%$) & $U(0.45, 0.85)$ & $U(0.60, 0.88)$, $U(0.5, 2.0)\text{ d}$ \\
 \midrule
-\textbf{Total / System} & \multicolumn{1}{l}{Estab. CNES 2111302726653 (100\% SUS)} & $\mathbf{55}$ & \multicolumn{5}{l}{Empirical sources: AMIB/Epimed \cite{soares2024update, zampieri2019icu}, RBPN \cite{guinsburg2016death}, Cardoso et al. \cite{cardoso2011impact}} \\
+\textbf{Total / System} & \multicolumn{1}{l}{Estab. CNES 2111302726653} & $\mathbf{55}$ & \multicolumn{6}{l}{Sources: DATASUS/CNES \cite{cnes_datasus_huufma}, AMIB/Epimed \textit{UTIs Brasileiras} \cite{utisbrasileiras2024}, ORCHESTRA \cite{soares2024orchestra, zampieri2019icu}, RBPN \cite{guinsburg2016death}, Cardoso et al. \cite{cardoso2011impact}.} \\
 \bottomrule
 \end{tabular}
 }
 \end{table*}
 
-According to the Brazilian National Register of Healthcare Establishments (DATASUS/CNES, Establishment ID 2111302726653, competency 12/2024) \cite{cnes_datasus_huufma}, HU-UFMA operates $C_{\text{total}} = 55$ permanent critical care beds dedicated exclusively to the Unified Health System (SUS): $15$ Adult Type III ICU beds, $10$ Type III Coronary Care (UCO) beds, $10$ Pediatric Type III ICU beds, and $20$ Neonatal Type II ICU beds.
-
-Clinical distributions are differentiated across the four pools according to published Brazilian epidemiological cohorts:
-\begin{itemize}
-    \item \textbf{Adult and Coronary Units:} In the national AMIB/Epimed and ORCHESTRA registries covering over 129,000 Brazilian ICU admissions \cite{zampieri2019icu, soares2024update}, public-sector adult ICUs exhibit mean stays of $6.0$--$7.5$ days ($\mu_{\text{los, adult}} = 6.5$ days, $CV = 0.65$) and hospital mortality rates near $27\%$ for admitted patients, whereas coronary units exhibit shorter mean stays ($\mu_{\text{los, coronary}} = 4.8$ days, $CV = 0.55$). Pre-ICU boarding decay ($\alpha_{\text{det}} \in [0.18, 0.20]\text{ day}^{-1}$ and $W_{\max} \in [0.5, 2.5]$ days) is calibrated from the Brazilian cohort study of Cardoso et al. \cite{cardoso2011impact}, which documented a continuous rise in mortality risk across $24$--$72$ hours of ICU boarding delay.
-    \item \textbf{Pediatric and Neonatal Units:} Based on AMIB pediatric data and the Brazilian Neonatal Research Network (RBPN) \cite{guinsburg2016death}, pediatric ICU stays average $\mu_{\text{los, pediatric}} = 6.0$ days with higher post-admission survival, whereas neonatal ICU patients (including preterm and very-low-birth-weight infants) require substantially longer hospital stays ($\mu_{\text{los, neonatal}} = 11.5$ days, $CV = 0.75$). In our baseline configuration, the severity--LOS coupling parameter in Eq. (\ref{eq:sev_los}) is set to $\beta = 1.2$, inducing a $2.1\times$ variation in expected stay between the mildest and most severe arrivals within each pool.
-\end{itemize}
+\begin{enumerate}[(I)]
+    \item \textbf{Directly Measured Quantities:} From the Brazilian National Register of Healthcare Establishments (DATASUS/CNES, Establishment ID 2111302726653, competency 12/2024) \cite{cnes_datasus_huufma}, HU-UFMA operates $C_{\text{total}} = 55$ critical care beds dedicated to the Unified Health System (SUS): $15$ Adult Type III ICU beds, $10$ Type III Coronary Care (UCO) beds, $10$ Pediatric Type III ICU beds, and $20$ Neonatal Type II ICU beds. Specialty-level mean lengths of stay and hospital mortality targets for admitted patients are taken from the AMIB/Epimed \textit{UTIs Brasileiras} national registry \cite{utisbrasileiras2024} and the multicenter ORCHESTRA studies \cite{soares2024orchestra, soares2024update, zampieri2019icu}: public adult ICUs average $\mu_{\text{los, adult}} = 6.5$ days with $\approx 26\%$--$28\%$ hospital mortality; coronary units average $\mu_{\text{los, coronary}} = 4.8$ days with $\approx 14\%$--$17\%$ mortality; and pediatric ICUs in the AMIB/Epimed pediatric panel \cite{utisbrasileiras2024} average $\mu_{\text{los, pediatric}} = 6.0$ days with $\approx 5\%$--$8\%$ mortality. For the Type II Neonatal ICU pool, $\mu_{\text{los, neonatal}} = 11.5$ days represents the overall unit average across general neonatal admissions (blending term and moderate preterm neonates staying $5$--$8$ days with the subgroup of very-low-birth-weight preterm infants analyzed by the Brazilian Neonatal Research Network \cite{guinsburg2016death}, whose stays exceed $30$--$45$ days).
+    \item \textbf{Calibrated and Derived Parameters:} Because hospital registries record outcomes only for patients admitted to the ICU, the counterfactual survival without ICU care ($P_{\text{out}}^i$) and the fractional ICU therapeutic efficacy ($g_i$) are not directly observable. We therefore calibrate the uniform support ranges of $P_{\text{out}}^i$ and $g_i$ in each pool so that the resulting post-admission mortality rate $1 - P_{\text{in}}^i(w)$ generated by the simulation matches the empirical AMIB/Epimed mortality targets. Specifically, at $w = 0$, the theoretical mean initial mortality $1 - \mathbb{E}[P_{\text{in},0}] = (1 - \mathbb{E}[P_{\text{out}}])(1 - \mathbb{E}[g])$ equals $(1 - 0.35)(1 - 0.60) = 26.0\%$ for Adult ICU, $(1 - 0.50)(1 - 0.70) = 15.0\%$ for Coronary UCO, $(1 - 0.70)(1 - 0.775) = 6.75\%$ for Pediatric ICU, and $(1 - 0.65)(1 - 0.74) = 9.1\%$ for Neonatal ICU. As shown in Table \ref{tab:calibration_params} (column 7), the actual simulation-generated mortality among admitted patients ($M_{\text{adm}, j}^{\pi}$, Eq. \ref{eq:admitted_mortality}) closely reproduces the registry targets across all four pools (e.g., $25.3\%$--$26.1\%$ at $\rho=1.0$ and $25.5\%$--$30.2\%$ at $\rho=1.6$ for Adult ICU). The boarding deterioration rate $\alpha_{\text{det}}^j \in [0.15, 0.20]\text{ day}^{-1}$ is derived from the Brazilian cohort study of Cardoso et al. \cite{cardoso2011impact}, which estimated an additional mortality hazard of $\approx 1.5\%$ per hour of pre-ICU delay ($\approx 0.36\text{ day}^{-1}$ on total mortality, corresponding to a decay rate of $\alpha_{\text{det}} \approx 0.18\text{ day}^{-1}$ on the saveable survival margin $P_{\text{in},0}^i - P_{\text{out}}^i$, so that a 48-hour boarding delay erodes $1 - e^{-0.36} \approx 30\%$ of the initial ICU benefit).
+    \item \textbf{Assumed Counterfactual and Structural Parameters:} The individual heterogeneity widths of $P_{\text{out}}^i$ and $g_i$, the maximum waiting tolerance $W_{\max}^i \sim U(0.5, 2.5)$ days (representing the 12--60 hour clinical window documented in emergency boarding studies before stabilization, transfer, or death), the baseline severity--LOS coupling $\beta = 1.2$, and the baseline reneging payoff factor $\theta_{\text{ren}} = 1.0$ are modeling assumptions. Because $P_{\text{out}}^i$ spans a width of $0.40$ in each pool, setting $\beta = 1.2$ in Eq. (\ref{eq:sev_los}) yields LOS multipliers ranging from $1 + 1.2(-0.20) = 0.76$ for the mildest arrivals to $1 + 1.2(+0.20) = 1.24$ for the sickest arrivals---a $1.24 / 0.76 = 1.63\times$ variation in expected stay across all pools. Because these structural parameters are not directly measured, we subject $\beta \in [-0.6, 2.4]$, $\alpha_{\text{det}} \in [0.05, 0.50]\text{ day}^{-1}$, $\theta_{\text{ren}} \in \{1.0, 0.5, 0.0\}$, and $\sigma_{\text{noise}} \in [0, 0.20]$ to comprehensive sensitivity analyses in Section \ref{sec:results}.
+\end{enumerate}
 
 \subsection{Effective Traffic Intensity and Simulation Protocol}
 
-Because Eq. (\ref{eq:sev_los}) centers the severity multiplier around $\mathbb{E}[1 - P_{\text{out}}^j]$, the unconditional mean LOS in each pool $j$ is exactly $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$. By Little's Law, to achieve a uniform effective traffic intensity $\rho$ across all four specialized units, the Poisson arrival rate for pool $j \in J$ is set to:
+Because Eq. (\ref{eq:sev_los}) centers the severity multiplier around $\mathbb{E}[1 - P_{\text{out}}^j]$ and the $0.35$ floor is never active for $|\beta| \le 2.4$, the unconditional mean LOS in each pool $j$ is exactly $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$. By Little's Law, to achieve a uniform effective traffic intensity $\rho$ across all four specialized units, the Poisson arrival rate for pool $j \in J$ is set to:
 \begin{equation}
     \lambda_j(\rho) = \frac{\rho \cdot C_j}{\mu_{\text{los}, j}}, \qquad \forall j \in J
     \label{eq:traffic_intensity}
 \end{equation}
 Thus, the nominal parameter $\rho$ equals the true effective traffic intensity $\rho_{\text{eff}} = \lambda_j \mathbb{E}[\text{LOS}_j]/C_j = \rho$ in every pool. Over the $T = 60$-day evaluation window, the total expected arrival volume across all 55 beds is $60 \sum_{j \in J} \lambda_j(\rho) = 468.2\,\rho$ patients (yielding on average $329.9$, $467.6$, $605.2$, and $744.7$ evaluated arrivals at $\rho \in \{0.70, 1.00, 1.30, 1.60\}$, respectively).
 
-Each replication simulates $T_{\text{warm}} = 15$ warm-up days followed by $T = 60$ evaluation days, continuing execution after day $75$ until all patients arriving in $[15, 75)$ complete service or renege. To guarantee zero cross-contamination between random inputs under Common Random Numbers, SHA-256 hash-derived seeds (\texttt{stable\_seed}) initialize five independent Mersenne Twister streams per replication: (1) inter-arrival times, (2) clinical survival attributes, (3) Log-Normal LOS realizations, (4) uniform survival outcomes $u_i$, and (5) clinical observation noise $\varepsilon_i$. For statistical inference across the 20 policy-vs-FCFS comparisons ($4\text{ regimes} \times 5\text{ policies}$), we report paired means, standard errors, $95\%$ confidence intervals, relative percentage gains, paired $t$-statistics, and Holm--Bonferroni step-down adjusted $p$-values ($p_{\text{Holm}}$).
+Each replication simulates $T_{\text{warm}} = 15$ warm-up days followed by $T = 60$ evaluation days, continuing execution after day $75$ until all patients arriving in $[15, 75)$ complete service or renege. To guarantee zero cross-contamination between random inputs under Common Random Numbers, SHA-256 hash-derived seeds (\texttt{stable\_seed}) initialize five independent Mersenne Twister streams per replication: (1) inter-arrival times, (2) clinical survival attributes, (3) Log-Normal LOS realizations, (4) uniform survival outcomes $u_i$, and (5) clinical observation noise $\varepsilon_i$. Across all tables and figures, policies are reported in a fixed canonical order (\texttt{FCFS, MSF, LSF, MGS, CMU-MGS, AUSTERE}), and families of statistical comparisons are adjusted using the Holm--Bonferroni step-down procedure ($p_{\text{Holm}}$).
 
 \section{Results and Discussion}
 \label{sec:results}
 
-\subsection{Overall Performance and Hindsight Optimality Gap}
+\subsection{Overall Performance and LP Optimality Gaps}
 
-Table \ref{tab:dynamic_results} reports the steady-state operational and survival metrics across all four congestion regimes ($\rho \in \{0.70, 1.00, 1.30, 1.60\}$), alongside the clairvoyant LP/MILP upper bound ($S_{\text{UB}}$). Figure \ref{fig:survivors} illustrates the trajectory of expected survivors across traffic intensities relative to the hindsight upper bound.
+Table \ref{tab:dynamic_results} reports the steady-state operational, admitted mortality, and survival metrics across all four congestion regimes ($\rho \in \{0.70, 1.00, 1.30, 1.60\}$), alongside both the Duration-Expectation LP Bound ($S_{\text{UB}}^{\text{exp}}$, using $\mathbb{E}[\text{LOS}_i]$) and the Hindsight LP Bound ($S_{\text{UB}}^{\text{real}}$, using realized $\text{LOS}_i$). Figure \ref{fig:survivors} illustrates the trajectory of expected survivors across traffic intensities relative to both LP upper bounds.
 
 \begin{table*}[t]
 \centering
-\caption{Dynamic simulation performance across congestion regimes (60-day steady-state window after 15-day warm-up, 100 CRN replications; mean $\pm$ standard error).}
+\caption{Dynamic simulation performance across congestion regimes (60-day steady-state window after 15-day warm-up, 100 CRN replications; mean $\pm$ standard error) in fixed policy order, compared against the Duration-Expectation LP Bound ($\mathbb{E}[\text{LOS}_i]$) and Hindsight LP Bound (realized $\text{LOS}_i$).}
 \label{tab:dynamic_results}
 \resizebox{\textwidth}{!}{
-\begin{tabular}{clccccccccc}
+\begin{tabular}{clcccccccccc}
 \toprule
-\textbf{Regime ($\rho$)} & \textbf{Policy} & \textbf{Total Arrivals} & \textbf{Admitted} & \textbf{Reneging Rate} & \textbf{Admitted Wait (h)} & \textbf{Reneged Wait (h)} & \textbf{Admitted LOS (d)} & \textbf{Bed Occupancy} & \textbf{Realized Survivors} & \textbf{Expected Survivors} \\
+\textbf{Regime ($\rho$)} & \textbf{Policy} & \textbf{Total Arrivals} & \textbf{Admitted} & \textbf{Reneging Rate} & \textbf{Admitted Wait (h)} & \textbf{Reneged Wait (h)} & \textbf{Admitted LOS (d)} & \textbf{Bed Occupancy} & \textbf{Admitted Mort.} & \textbf{Realized Survivors} & \textbf{Expected Survivors} \\
 \midrule
-\multirow{7}{*}{\textbf{0.70}}
- & FCFS & $329.9 \pm 1.7$ & $325.5 \pm 1.6$ & $1.3\% \pm 0.1\%$ & $0.74 \pm 0.06$ & $21.8 \pm 1.1$ & $7.04 \pm 0.05$ & $68.9\% \pm 0.4\%$ & $237.3 \pm 1.3$ & $238.54 \pm 1.25$ \\
- & MSF & $329.9 \pm 1.7$ & $325.1 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.60 \pm 0.05$ & $24.2 \pm 1.1$ & $7.05 \pm 0.05$ & $68.9\% \pm 0.4\%$ & $237.4 \pm 1.3$ & $238.64 \pm 1.25$ \\
- & LSF & $329.9 \pm 1.7$ & $325.2 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.58 \pm 0.05$ & $24.1 \pm 1.2$ & $7.04 \pm 0.05$ & $68.9\% \pm 0.4\%$ & $237.3 \pm 1.3$ & $238.59 \pm 1.25$ \\
- & MGS & $329.9 \pm 1.7$ & $325.1 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.59 \pm 0.05$ & $24.7 \pm 1.2$ & $7.04 \pm 0.05$ & $68.9\% \pm 0.4\%$ & $237.3 \pm 1.3$ & $238.71 \pm 1.25$ \\
- & CMU-MGS & $329.9 \pm 1.7$ & $325.2 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.58 \pm 0.05$ & $23.8 \pm 1.1$ & $7.04 \pm 0.05$ & $68.8\% \pm 0.4\%$ & $237.3 \pm 1.3$ & $238.71 \pm 1.25$ \\
- & AUSTERE & $329.9 \pm 1.7$ & $325.4 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.61 \pm 0.05$ & $24.7 \pm 1.2$ & $7.04 \pm 0.05$ & $68.9\% \pm 0.4\%$ & $237.4 \pm 1.3$ & $\mathbf{238.75 \pm 1.25}$ \\
- & \textit{Hindsight UB} & $329.9 \pm 1.7$ & $329.8 \pm 1.7$ & --- & --- & --- & --- & --- & --- & $\mathit{239.96 \pm 1.25}$ \\
+\multirow{8}{*}{\textbf{0.70}}
+ & FCFS & $329.9 \pm 1.7$ & $325.4 \pm 1.6$ & $1.3\% \pm 0.1\%$ & $0.74 \pm 0.05$ & $20.5 \pm 0.8$ & $7.04 \pm 0.03$ & $69.0\% \pm 0.4\%$ & $14.3\% \pm 0.0\%$ & $281.2 \pm 1.5$ & $281.44 \pm 1.40$ \\
+ & MSF & $329.9 \pm 1.7$ & $325.1 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.61 \pm 0.04$ & $24.0 \pm 0.9$ & $7.04 \pm 0.03$ & $68.9\% \pm 0.4\%$ & $14.3\% \pm 0.0\%$ & $281.3 \pm 1.5$ & $281.59 \pm 1.40$ \\
+ & LSF & $329.9 \pm 1.7$ & $325.3 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.56 \pm 0.03$ & $24.8 \pm 0.9$ & $7.04 \pm 0.03$ & $68.9\% \pm 0.4\%$ & $14.2\% \pm 0.0\%$ & $281.2 \pm 1.5$ & $281.49 \pm 1.40$ \\
+ & MGS & $329.9 \pm 1.7$ & $325.2 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.59 \pm 0.03$ & $24.3 \pm 0.9$ & $7.04 \pm 0.03$ & $68.9\% \pm 0.4\%$ & $14.2\% \pm 0.0\%$ & $\mathbf{281.3 \pm 1.5}$ & $281.65 \pm 1.41$ \\
+ & CMU-MGS & $329.9 \pm 1.7$ & $325.1 \pm 1.6$ & $1.4\% \pm 0.1\%$ & $0.56 \pm 0.03$ & $24.7 \pm 0.9$ & $7.04 \pm 0.03$ & $68.9\% \pm 0.4\%$ & $14.2\% \pm 0.0\%$ & $281.2 \pm 1.5$ & $281.60 \pm 1.40$ \\
+ & AUSTERE & $329.9 \pm 1.7$ & $325.4 \pm 1.6$ & $1.3\% \pm 0.1\%$ & $0.66 \pm 0.04$ & $25.7 \pm 1.0$ & $7.04 \pm 0.03$ & $68.9\% \pm 0.4\%$ & $14.3\% \pm 0.0\%$ & $281.2 \pm 1.5$ & $\mathbf{281.67 \pm 1.40}$ \\
+ & \textit{LP Bound ($\mathbb{E}[\text{LOS}]$)} & $329.9 \pm 1.7$ & $328.2 \pm 1.6$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{282.80 \pm 1.43}$ \\
+ & \textit{Hindsight LP (Real. LOS)} & $329.9 \pm 1.7$ & $328.8 \pm 1.7$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{283.03 \pm 1.45}$ \\
 \midrule
-\multirow{7}{*}{\textbf{1.00}}
- & FCFS & $467.6 \pm 2.2$ & $421.3 \pm 1.8$ & $9.8\% \pm 0.3\%$ & $5.65 \pm 0.19$ & $23.5 \pm 0.3$ & $7.06 \pm 0.04$ & $89.4\% \pm 0.3\%$ & $321.4 \pm 1.5$ & $320.23 \pm 1.43$ \\
- & MSF & $467.6 \pm 2.2$ & $416.7 \pm 1.8$ & $10.8\% \pm 0.3\%$ & $4.20 \pm 0.14$ & $27.5 \pm 0.3$ & $7.12 \pm 0.04$ & $89.1\% \pm 0.3\%$ & $323.4 \pm 1.5$ & $321.90 \pm 1.45$ \\
- & LSF & $467.6 \pm 2.2$ & $420.4 \pm 1.8$ & $10.0\% \pm 0.3\%$ & $3.82 \pm 0.13$ & $28.0 \pm 0.4$ & $7.03 \pm 0.04$ & $88.7\% \pm 0.3\%$ & $323.3 \pm 1.5$ & $322.24 \pm 1.45$ \\
- & MGS & $467.6 \pm 2.2$ & $418.0 \pm 1.8$ & $10.5\% \pm 0.3\%$ & $3.87 \pm 0.13$ & $28.1 \pm 0.4$ & $7.09 \pm 0.04$ & $89.0\% \pm 0.3\%$ & $324.5 \pm 1.5$ & $323.37 \pm 1.45$ \\
- & AUSTERE & $467.6 \pm 2.2$ & $419.4 \pm 1.8$ & $10.2\% \pm 0.3\%$ & $4.25 \pm 0.14$ & $28.9 \pm 0.3$ & $7.07 \pm 0.04$ & $89.0\% \pm 0.3\%$ & $324.3 \pm 1.5$ & $323.37 \pm 1.45$ \\
- & CMU-MGS & $467.6 \pm 2.2$ & $419.0 \pm 1.8$ & $10.3\% \pm 0.3\%$ & $3.84 \pm 0.13$ & $28.0 \pm 0.3$ & $7.06 \pm 0.04$ & $88.8\% \pm 0.3\%$ & $\mathbf{324.7 \pm 1.5}$ & $\mathbf{323.39 \pm 1.45}$ \\
- & \textit{Hindsight UB} & $467.6 \pm 2.2$ & $455.3 \pm 1.9$ & --- & --- & --- & --- & --- & --- & $\mathit{335.16 \pm 1.50}$ \\
+\multirow{8}{*}{\textbf{1.00}}
+ & FCFS & $467.6 \pm 1.9$ & $421.0 \pm 1.5$ & $9.9\% \pm 0.3\%$ & $5.65 \pm 0.13$ & $23.5 \pm 0.2$ & $7.06 \pm 0.03$ & $89.4\% \pm 0.2\%$ & $15.7\% \pm 0.1\%$ & $379.0 \pm 1.5$ & $378.51 \pm 1.30$ \\
+ & MSF & $467.6 \pm 1.9$ & $417.0 \pm 1.5$ & $10.7\% \pm 0.3\%$ & $4.17 \pm 0.09$ & $27.4 \pm 0.2$ & $7.10 \pm 0.03$ & $89.1\% \pm 0.2\%$ & $15.5\% \pm 0.1\%$ & $380.9 \pm 1.6$ & $380.70 \pm 1.32$ \\
+ & LSF & $467.6 \pm 1.9$ & $420.1 \pm 1.5$ & $10.1\% \pm 0.3\%$ & $3.57 \pm 0.07$ & $28.4 \pm 0.2$ & $7.03 \pm 0.03$ & $88.7\% \pm 0.2\%$ & $14.9\% \pm 0.0\%$ & $380.8 \pm 1.6$ & $379.94 \pm 1.31$ \\
+ & MGS & $467.6 \pm 1.9$ & $417.5 \pm 1.5$ & $10.6\% \pm 0.3\%$ & $3.87 \pm 0.09$ & $28.1 \pm 0.2$ & $7.09 \pm 0.03$ & $89.0\% \pm 0.2\%$ & $15.3\% \pm 0.0\%$ & $381.9 \pm 1.6$ & $381.33 \pm 1.33$ \\
+ & CMU-MGS & $467.6 \pm 1.9$ & $418.1 \pm 1.4$ & $10.5\% \pm 0.3\%$ & $3.68 \pm 0.07$ & $28.4 \pm 0.2$ & $7.07 \pm 0.03$ & $88.9\% \pm 0.2\%$ & $15.1\% \pm 0.0\%$ & $\mathbf{382.2 \pm 1.6}$ & $\mathbf{381.46 \pm 1.32}$ \\
+ & AUSTERE & $467.6 \pm 1.9$ & $419.1 \pm 1.5$ & $10.3\% \pm 0.3\%$ & $4.41 \pm 0.10$ & $30.1 \pm 0.2$ & $7.08 \pm 0.03$ & $89.2\% \pm 0.2\%$ & $15.3\% \pm 0.0\%$ & $381.7 \pm 1.6$ & $381.21 \pm 1.33$ \\
+ & \textit{LP Bound ($\mathbb{E}[\text{LOS}]$)} & $467.6 \pm 1.9$ & $440.0 \pm 1.3$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{390.99 \pm 1.37}$ \\
+ & \textit{Hindsight LP (Real. LOS)} & $467.6 \pm 1.9$ & $452.1 \pm 1.6$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{394.83 \pm 1.48}$ \\
 \midrule
-\multirow{7}{*}{\textbf{1.30}}
- & FCFS & $605.2 \pm 2.2$ & $453.4 \pm 1.6$ & $25.0\% \pm 0.3\%$ & $12.59 \pm 0.17$ & $24.8 \pm 0.2$ & $7.07 \pm 0.04$ & $96.8\% \pm 0.1\%$ & $377.2 \pm 1.5$ & $378.23 \pm 1.29$ \\
- & MSF & $605.2 \pm 2.2$ & $440.9 \pm 1.6$ & $27.1\% \pm 0.3\%$ & $8.50 \pm 0.12$ & $29.1 \pm 0.2$ & $7.30 \pm 0.04$ & $96.7\% \pm 0.1\%$ & $383.2 \pm 1.5$ & $383.91 \pm 1.32$ \\
- & LSF & $605.2 \pm 2.2$ & $457.4 \pm 1.6$ & $24.3\% \pm 0.3\%$ & $7.39 \pm 0.10$ & $29.3 \pm 0.2$ & $6.97 \pm 0.04$ & $96.1\% \pm 0.2\%$ & $384.8 \pm 1.6$ & $386.17 \pm 1.36$ \\
- & MGS & $605.2 \pm 2.2$ & $445.4 \pm 1.6$ & $26.3\% \pm 0.3\%$ & $7.74 \pm 0.11$ & $29.4 \pm 0.2$ & $7.21 \pm 0.04$ & $96.5\% \pm 0.1\%$ & $387.8 \pm 1.5$ & $388.68 \pm 1.34$ \\
- & CMU-MGS & $605.2 \pm 2.2$ & $449.4 \pm 1.6$ & $25.7\% \pm 0.3\%$ & $7.46 \pm 0.10$ & $29.5 \pm 0.2$ & $7.13 \pm 0.04$ & $96.4\% \pm 0.1\%$ & $388.2 \pm 1.5$ & $389.17 \pm 1.34$ \\
- & AUSTERE & $605.2 \pm 2.2$ & $450.3 \pm 1.6$ & $25.5\% \pm 0.3\%$ & $8.37 \pm 0.11$ & $30.5 \pm 0.2$ & $7.12 \pm 0.04$ & $96.5\% \pm 0.1\%$ & $\mathbf{388.7 \pm 1.6}$ & $\mathbf{389.22 \pm 1.35}$ \\
- & \textit{Hindsight UB} & $605.2 \pm 2.2$ & $517.8 \pm 1.6$ & --- & --- & --- & --- & --- & --- & $\mathit{420.66 \pm 1.35}$ \\
+\multirow{8}{*}{\textbf{1.30}}
+ & FCFS & $605.2 \pm 2.5$ & $453.3 \pm 1.4$ & $25.0\% \pm 0.3\%$ & $12.68 \pm 0.14$ & $24.7 \pm 0.1$ & $7.08 \pm 0.02$ & $96.8\% \pm 0.1\%$ & $17.5\% \pm 0.1\%$ & $447.8 \pm 1.7$ & $449.11 \pm 1.47$ \\
+ & MSF & $605.2 \pm 2.5$ & $442.5 \pm 1.4$ & $26.8\% \pm 0.3\%$ & $8.42 \pm 0.10$ & $29.1 \pm 0.1$ & $7.27 \pm 0.03$ & $96.6\% \pm 0.1\%$ & $17.0\% \pm 0.0\%$ & $455.1 \pm 1.7$ & $456.59 \pm 1.54$ \\
+ & LSF & $605.2 \pm 2.5$ & $456.0 \pm 1.3$ & $24.6\% \pm 0.3\%$ & $6.91 \pm 0.08$ & $29.7 \pm 0.1$ & $6.99 \pm 0.02$ & $96.1\% \pm 0.1\%$ & $15.3\% \pm 0.0\%$ & $454.1 \pm 1.7$ & $455.50 \pm 1.52$ \\
+ & MGS & $605.2 \pm 2.5$ & $444.8 \pm 1.4$ & $26.4\% \pm 0.3\%$ & $7.56 \pm 0.08$ & $29.6 \pm 0.1$ & $7.22 \pm 0.03$ & $96.5\% \pm 0.1\%$ & $16.3\% \pm 0.0\%$ & $457.4 \pm 1.8$ & $458.94 \pm 1.57$ \\
+ & CMU-MGS & $605.2 \pm 2.5$ & $448.2 \pm 1.4$ & $25.9\% \pm 0.3\%$ & $7.13 \pm 0.08$ & $29.9 \pm 0.1$ & $7.16 \pm 0.03$ & $96.4\% \pm 0.1\%$ & $15.9\% \pm 0.0\%$ & $\mathbf{457.7 \pm 1.8}$ & $\mathbf{459.59 \pm 1.55}$ \\
+ & AUSTERE & $605.2 \pm 2.5$ & $449.0 \pm 1.4$ & $25.7\% \pm 0.3\%$ & $8.79 \pm 0.10$ & $31.7 \pm 0.1$ & $7.16 \pm 0.03$ & $96.7\% \pm 0.1\%$ & $16.3\% \pm 0.0\%$ & $457.6 \pm 1.7$ & $458.69 \pm 1.55$ \\
+ & \textit{LP Bound ($\mathbb{E}[\text{LOS}]$)} & $605.2 \pm 2.5$ & $485.0 \pm 0.8$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{480.32 \pm 1.57}$ \\
+ & \textit{Hindsight LP (Real. LOS)} & $605.2 \pm 2.5$ & $543.0 \pm 1.8$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{495.53 \pm 1.86}$ \\
 \midrule
-\multirow{7}{*}{\textbf{1.60}}
- & FCFS & $744.7 \pm 2.5$ & $462.0 \pm 1.5$ & $37.9\% \pm 0.3\%$ & $18.27 \pm 0.16$ & $25.5 \pm 0.1$ & $7.09 \pm 0.04$ & $99.0\% \pm 0.1\%$ & $430.2 \pm 1.4$ & $431.14 \pm 1.13$ \\
- & MSF & $744.7 \pm 2.5$ & $442.4 \pm 1.5$ & $40.5\% \pm 0.3\%$ & $11.09 \pm 0.11$ & $29.9 \pm 0.1$ & $7.43 \pm 0.04$ & $98.9\% \pm 0.1\%$ & $442.0 \pm 1.4$ & $442.48 \pm 1.18$ \\
- & LSF & $744.7 \pm 2.5$ & $473.4 \pm 1.5$ & $36.4\% \pm 0.3\%$ & $9.47 \pm 0.09$ & $30.1 \pm 0.1$ & $6.92 \pm 0.04$ & $98.6\% \pm 0.1\%$ & $446.4 \pm 1.5$ & $446.47 \pm 1.23$ \\
- & MGS & $744.7 \pm 2.5$ & $451.8 \pm 1.4$ & $39.3\% \pm 0.3\%$ & $9.89 \pm 0.10$ & $30.3 \pm 0.1$ & $7.28 \pm 0.04$ & $98.8\% \pm 0.1\%$ & $451.2 \pm 1.5$ & $451.12 \pm 1.23$ \\
- & AUSTERE & $744.7 \pm 2.5$ & $458.6 \pm 1.5$ & $38.4\% \pm 0.3\%$ & $10.89 \pm 0.10$ & $31.5 \pm 0.1$ & $7.17 \pm 0.04$ & $98.9\% \pm 0.1\%$ & $\mathbf{451.6 \pm 1.5}$ & $451.27 \pm 1.25$ \\
- & CMU-MGS & $744.7 \pm 2.5$ & $459.1 \pm 1.5$ & $38.3\% \pm 0.3\%$ & $9.56 \pm 0.10$ & $30.4 \pm 0.1$ & $7.16 \pm 0.04$ & $98.7\% \pm 0.1\%$ & $\mathbf{451.6 \pm 1.5}$ & $\mathbf{451.93 \pm 1.25}$ \\
- & \textit{Hindsight UB} & $744.7 \pm 2.5$ & $556.4 \pm 1.5$ & --- & --- & --- & --- & --- & --- & $\mathit{501.81 \pm 1.25}$ \\
+\multirow{8}{*}{\textbf{1.60}}
+ & FCFS & $744.7 \pm 2.5$ & $462.1 \pm 1.4$ & $37.9\% \pm 0.3\%$ & $18.27 \pm 0.13$ & $25.5 \pm 0.1$ & $7.08 \pm 0.02$ & $98.9\% \pm 0.1\%$ & $18.8\% \pm 0.0\%$ & $512.6 \pm 1.6$ & $513.42 \pm 1.37$ \\
+ & MSF & $744.7 \pm 2.5$ & $444.5 \pm 1.4$ & $40.2\% \pm 0.3\%$ & $10.99 \pm 0.07$ & $29.8 \pm 0.1$ & $7.39 \pm 0.03$ & $98.8\% \pm 0.1\%$ & $18.2\% \pm 0.0\%$ & $527.4 \pm 1.7$ & $527.54 \pm 1.45$ \\
+ & LSF & $744.7 \pm 2.5$ & $472.0 \pm 1.4$ & $36.6\% \pm 0.3\%$ & $8.80 \pm 0.06$ & $30.5 \pm 0.1$ & $6.94 \pm 0.02$ & $98.5\% \pm 0.1\%$ & $15.1\% \pm 0.0\%$ & $525.7 \pm 1.7$ & $525.74 \pm 1.42$ \\
+ & MGS & $744.7 \pm 2.5$ & $446.8 \pm 1.4$ & $39.9\% \pm 0.3\%$ & $9.68 \pm 0.06$ & $30.4 \pm 0.1$ & $7.34 \pm 0.02$ & $98.8\% \pm 0.1\%$ & $16.9\% \pm 0.0\%$ & $530.2 \pm 1.8$ & $530.61 \pm 1.46$ \\
+ & CMU-MGS & $744.7 \pm 2.5$ & $454.2 \pm 1.4$ & $38.9\% \pm 0.3\%$ & $8.99 \pm 0.05$ & $30.7 \pm 0.1$ & $7.23 \pm 0.02$ & $98.7\% \pm 0.1\%$ & $16.1\% \pm 0.0\%$ & $\mathbf{531.6 \pm 1.7}$ & $\mathbf{532.09 \pm 1.46}$ \\
+ & AUSTERE & $744.7 \pm 2.5$ & $454.0 \pm 1.4$ & $39.0\% \pm 0.3\%$ & $11.38 \pm 0.08$ & $32.7 \pm 0.1$ & $7.24 \pm 0.02$ & $98.9\% \pm 0.1\%$ & $16.7\% \pm 0.0\%$ & $530.5 \pm 1.7$ & $530.27 \pm 1.43$ \\
+ & \textit{LP Bound ($\mathbb{E}[\text{LOS}]$)} & $744.7 \pm 2.5$ & $495.7 \pm 0.6$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{559.17 \pm 1.44}$ \\
+ & \textit{Hindsight LP (Real. LOS)} & $744.7 \pm 2.5$ & $614.4 \pm 1.2$ & --- & --- & --- & --- & --- & --- & --- & $\mathit{590.47 \pm 1.67}$ \\
 \bottomrule
 \end{tabular}
 }
@@ -380,25 +403,25 @@ Table \ref{tab:dynamic_results} reports the steady-state operational and surviva
 
 Several key operational patterns emerge from Table \ref{tab:dynamic_results}:
 \begin{enumerate}[(1)]
-    \item \textbf{Consistency with Little's Law:} Because arrival rates $\lambda_j(\rho)$ are calibrated to the exact pool-specific mean stay $\mu_{\text{los}, j}$ and occupancy is integrated strictly over $[15, 75)$ days, time-weighted bed occupancy aligns closely with queueing theory. At $\rho = 0.70$, only $1.3\%$--$1.4\%$ of arrivals renege, yielding a steady-state occupancy of $68.8\%$--$68.9\%$ (matching the theoretical $M/G/c+G$ load $\rho (1 - r_{\text{ren}}) \approx 0.70 \times 0.986 = 69.0\%$). At $\rho = 1.00$, stochastic fluctuations under finite patience induce a $9.8\%$--$10.8\%$ reneging rate and $88.7\%$--$89.4\%$ bed utilization. Under severe surge ($\rho = 1.60$), the hospital operates near full saturation ($98.6\%$--$99.0\%$ occupancy).
-    \item \textbf{Bed Turnover vs. Clinical Severity across Policies:} The ”Admitted LOS” column directly reflects the severity--duration coupling of Eq. (\ref{eq:sev_los}). At $\rho = 1.60$, MSF prioritizes the sickest candidates ($1 - P_{\text{out}}^i$), resulting in the longest mean admitted stay ($7.43$ days) and the lowest admission volume ($442.4$ patients, $40.5\%$ reneging). Conversely, LSF favors milder patients with high $P_{\text{in}}^i$, achieving the shortest mean stay ($6.92$ days) and admitting the highest number of patients ($473.4$, $36.4\%$ reneging). Despite admitting $14.3$ more patients than CMU-MGS, LSF saves fewer lives ($446.47$ vs. $451.93$) because many of its admitted patients already had high baseline survival $P_{\text{out}}^i$ in general wards.
-    \item \textbf{Distance to the Hindsight Upper Bound:} As shown in Figure \ref{fig:survivors}, the offline LP/MILP upper bound $S_{\text{UB}}$ achieves $239.96$, $335.16$, $420.66$, and $501.81$ expected survivors across $\rho \in \{0.7, 1.0, 1.3, 1.6\}$. The corresponding optimality gap $(S_{\text{UB}} - S_{\text{exp}}^{\text{CMU-MGS}})/S_{\text{UB}}$ of the online CMU-MGS rule is $0.52\%$ at $\rho = 0.70$, $3.51\%$ at $\rho = 1.00$, $7.47\%$ at $\rho = 1.30$, and $9.93\%$ at $\rho = 1.60$. Note that the hindsight relaxation knows exact future realized stays $\text{LOS}_i$ and future arrival epochs, allowing it to selectively cherry-pick ultra-short-stay realizations ($556.4$ admissions vs. $459.1$ for CMU-MGS at $\rho = 1.60$). Even without clairvoyance, online CMU-MGS captures $29.3\%$ of the total theoretical survival gap between FCFS and the offline LP relaxation under extreme surge.
+    \item \textbf{Consistency with Little's Law and Empirical Mortality Targets:} At $\rho = 0.70$, only $1.3\%$--$1.4\%$ of arrivals renege, yielding a steady-state occupancy of $68.9\%$--$69.0\%$ (matching the theoretical $M/G/c+G$ load $\rho (1 - r_{\text{ren}}) \approx 0.70 \times 0.986 = 69.0\%$). At $\rho = 1.00$, stochastic fluctuations under finite patience induce a $9.9\%$--$10.7\%$ reneging rate and $88.7\%$--$89.4\%$ bed utilization, while at $\rho = 1.60$ the hospital operates near full saturation ($98.5\%$--$98.9\%$ occupancy). Across all regimes, the overall hospital mortality among admitted patients ($14.2\%$--$18.8\%$, weighted across the four specialty pools) and the disaggregated pool mortalities (Table \ref{tab:calibration_params}) match the AMIB/Epimed national registry benchmarks.
+    \item \textbf{Bed Turnover vs. Clinical Severity across Policies:} The ``Admitted LOS'' column reflects the severity--duration coupling of Eq. (\ref{eq:sev_los}). At $\rho = 1.60$, MSF prioritizes the sickest candidates ($1 - P_{\text{out}}^i$), resulting in the longest mean admitted stay ($7.39$ days) and the lowest admission volume ($444.5$ patients, $40.2\%$ reneging). Conversely, LSF favors milder patients with high $P_{\text{in}}^i$, achieving the shortest mean stay ($6.94$ days) and admitting the highest number of patients ($472.0$, $36.6\%$ reneging), but saving fewer lives than MGS and CMU-MGS because many of its admitted patients already had high ward survival $P_{\text{out}}^i$. By normalizing marginal gain by expected stay, CMU-MGS admits $7.4$ more patients than greedy MGS at $\rho = 1.60$ ($454.2$ vs. $446.8$) with a shorter mean stay ($7.23$ vs. $7.34$ days), directly translating faster bed turnover into higher overall survival ($532.09$ vs. $530.61$).
+    \item \textbf{Tightening the LP Upper Bound (Value of Clairvoyance vs. Online Optimality Gap):} As shown in Table \ref{tab:dynamic_results} and Figure \ref{fig:survivors}, the Hindsight LP Bound ($S_{\text{UB}}^{\text{real}}$, which knows realized individual stays $\text{LOS}_i$) achieves $283.03$, $394.83$, $495.53$, and $590.47$ expected survivors across $\rho \in \{0.7, 1.0, 1.3, 1.6\}$, corresponding to a pessimistic gap $(S_{\text{UB}}^{\text{real}} - S_{\text{exp}}^{\text{CMU-MGS}})/S_{\text{UB}}^{\text{real}}$ of $0.51\%$, $3.39\%$, $7.25\%$, and $9.89\%$. However, at $\rho = 1.60$, $S_{\text{UB}}^{\text{real}}$ admits $614.4$ patients (compared to $454.2$ under CMU-MGS) because hindsight knowledge of log-normal realizations allows the LP to selectively cherry-pick patients who happen to draw ultra-short realized stays ($\text{LOS}_i \ll \mathbb{E}[\text{LOS}_i]$). When we remove duration clairvoyance via the Duration-Expectation LP Bound ($S_{\text{UB}}^{\text{exp}}$, which uses $\mathbb{E}[\text{LOS}_i]$), LP admissions drop to $495.7$ and the upper bound tightens to $282.80$, $390.99$, $480.32$, and $559.17$ survivors across $\rho \in \{0.7, 1.0, 1.3, 1.6\}$. Against $S_{\text{UB}}^{\text{exp}}$, the optimality gap of CMU-MGS drops by more than half under severe surge: $0.42\%$ at $\rho = 0.70$, $2.44\%$ at $\rho = 1.00$, $4.32\%$ at $\rho = 1.30$, and $\mathbf{4.84\%}$ at $\rho = 1.60$ (with the remaining $4.84\%$ gap attributable to future arrival-time knowledge, fractional LP splitting, and empty initial bed relaxation at $T_{\text{warm}}$).
 \end{enumerate}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{fig_survivors.png}
-    \caption{Expected total survivors across online triage policies compared against the hindsight time-indexed LP/MILP upper bound ($S_{\text{UB}}$) across effective traffic intensities $\rho \in \{0.7, 1.0, 1.3, 1.6\}$ ($95\%$ confidence intervals).}
+    \caption{Expected total survivors across online triage policies compared against the Hindsight LP Bound (realized $\text{LOS}_i$) and the tighter Duration-Expectation LP Bound ($\mathbb{E}[\text{LOS}_i]$) across effective traffic intensities $\rho \in \{0.7, 1.0, 1.3, 1.6\}$ ($95\%$ confidence intervals).}
     \label{fig:survivors}
 \end{figure}
 
 \subsection{Paired Statistical Comparisons Over the FCFS Baseline}
 
-Table \ref{tab:paired_stats} and Figure \ref{fig:paired_gain} report the Common Random Numbers paired survival differences $\Delta S_r^\pi = S_{\text{exp}, r}^\pi - S_{\text{exp}, r}^{\text{FCFS}}$ across all 20 policy-regime pairs, adjusted for multiple testing via the Holm--Bonferroni procedure.
+Table \ref{tab:paired_stats} and Figure \ref{fig:paired_gain} report the Common Random Numbers paired survival differences $\Delta S_r^\pi = S_{\text{exp}, r}^\pi - S_{\text{exp}, r}^{\text{FCFS}}$ across all 20 policy-regime pairs in fixed policy order, adjusted for multiple testing via the Holm--Bonferroni procedure.
 
 \begin{table*}[t]
 \centering
-\caption{Paired expected survival differences relative to the FCFS hospital baseline across 100 CRN replications (mean $\pm$ SE, $95\%$ paired CI, relative gain, paired $t$-statistic, and Holm--Bonferroni adjusted $p$-value across 20 tests).}
+\caption{Paired expected survival differences relative to the FCFS hospital baseline across 100 CRN replications in fixed policy order (mean $\pm$ SE, $95\%$ paired CI, relative gain, paired $t$-statistic, and Holm--Bonferroni adjusted $p$-value across 20 tests).}
 \label{tab:paired_stats}
 \resizebox{0.92\textwidth}{!}{
 \begin{tabular}{clccccc}
@@ -406,32 +429,32 @@ Table \ref{tab:paired_stats} and Figure \ref{fig:paired_gain} report the Common 
 \textbf{Regime ($\rho$)} & \textbf{Policy vs. FCFS} & \textbf{Paired Difference ($\Delta S$)} & \textbf{95\% Paired CI} & \textbf{Relative Effect} & \textbf{$t$-statistic} & \textbf{$p_{\text{Holm}}$} \\
 \midrule
 \multirow{5}{*}{\textbf{0.70}}
- & LSF vs. FCFS     & $+0.05 \pm 0.03$ & $[-0.02,\; +0.12]$ & $+0.02\%$ & $1.39$ & $0.167$ \\
- & MSF vs. FCFS     & $+0.10 \pm 0.03$ & $[+0.03,\; +0.16]$ & $+0.04\%$ & $2.92$ & $0.007$ \\
- & MGS vs. FCFS     & $+0.17 \pm 0.04$ & $[+0.09,\; +0.24]$ & $+0.07\%$ & $4.14$ & $< 0.001$ \\
- & CMU-MGS vs. FCFS & $+0.17 \pm 0.04$ & $[+0.09,\; +0.25]$ & $+0.07\%$ & $4.16$ & $< 0.001$ \\
- & AUSTERE vs. FCFS & $\mathbf{+0.21 \pm 0.04}$ & $[+0.13,\; +0.29]$ & $+0.09\%$ & $5.35$ & $< 0.001$ \\
+ & MSF vs. FCFS     & $+0.15 \pm 0.03$ & $[+0.08,\; +0.21]$ & $+0.05\%$ & $4.30$ & $< 0.001$ \\
+ & LSF vs. FCFS     & $+0.05 \pm 0.04$ & $[-0.03,\; +0.13]$ & $+0.02\%$ & $1.29$ & $0.200$ \\
+ & MGS vs. FCFS     & $+0.21 \pm 0.04$ & $[+0.13,\; +0.29]$ & $+0.07\%$ & $4.86$ & $< 0.001$ \\
+ & CMU-MGS vs. FCFS & $+0.16 \pm 0.04$ & $[+0.08,\; +0.24]$ & $+0.06\%$ & $4.09$ & $< 0.001$ \\
+ & AUSTERE vs. FCFS & $\mathbf{+0.23 \pm 0.04}$ & $[+0.15,\; +0.31]$ & $+0.08\%$ & $5.66$ & $< 0.001$ \\
 \midrule
 \multirow{5}{*}{\textbf{1.00}}
- & MSF vs. FCFS     & $+1.67 \pm 0.14$ & $[+1.40,\; +1.95]$ & $+0.52\%$ & $11.79$ & $< 0.001$ \\
- & LSF vs. FCFS     & $+2.01 \pm 0.15$ & $[+1.71,\; +2.31]$ & $+0.63\%$ & $13.14$ & $< 0.001$ \\
- & MGS vs. FCFS     & $+3.13 \pm 0.17$ & $[+2.81,\; +3.46]$ & $+0.98\%$ & $18.90$ & $< 0.001$ \\
- & AUSTERE vs. FCFS & $+3.14 \pm 0.17$ & $[+2.81,\; +3.47]$ & $+0.98\%$ & $18.78$ & $< 0.001$ \\
- & CMU-MGS vs. FCFS & $\mathbf{+3.16 \pm 0.17}$ & $[+2.83,\; +3.49]$ & $+0.99\%$ & $18.80$ & $< 0.001$ \\
+ & MSF vs. FCFS     & $+2.18 \pm 0.15$ & $[+1.89,\; +2.47]$ & $+0.58\%$ & $14.66$ & $< 0.001$ \\
+ & LSF vs. FCFS     & $+1.43 \pm 0.15$ & $[+1.14,\; +1.72]$ & $+0.38\%$ & $9.57$ & $< 0.001$ \\
+ & MGS vs. FCFS     & $+2.82 \pm 0.16$ & $[+2.50,\; +3.14]$ & $+0.75\%$ & $17.35$ & $< 0.001$ \\
+ & CMU-MGS vs. FCFS & $\mathbf{+2.94 \pm 0.17}$ & $[+2.61,\; +3.28]$ & $+0.78\%$ & $17.36$ & $< 0.001$ \\
+ & AUSTERE vs. FCFS & $+2.70 \pm 0.17$ & $[+2.37,\; +3.02]$ & $+0.71\%$ & $16.32$ & $< 0.001$ \\
 \midrule
 \multirow{5}{*}{\textbf{1.30}}
- & MSF vs. FCFS     & $+5.68 \pm 0.26$ & $[+5.16,\; +6.20]$ & $+1.50\%$ & $21.46$ & $< 0.001$ \\
- & LSF vs. FCFS     & $+7.94 \pm 0.28$ & $[+7.39,\; +8.50]$ & $+2.10\%$ & $28.17$ & $< 0.001$ \\
- & MGS vs. FCFS     & $+10.45 \pm 0.30$ & $[+9.87,\; +11.04]$ & $+2.76\%$ & $35.11$ & $< 0.001$ \\
- & CMU-MGS vs. FCFS & $+10.94 \pm 0.27$ & $[+10.40,\; +11.48]$ & $+2.89\%$ & $39.81$ & $< 0.001$ \\
- & AUSTERE vs. FCFS & $\mathbf{+10.99 \pm 0.33}$ & $[+10.35,\; +11.63]$ & $+2.91\%$ & $33.56$ & $< 0.001$ \\
+ & MSF vs. FCFS     & $+7.48 \pm 0.30$ & $[+6.90,\; +8.07]$ & $+1.67\%$ & $25.19$ & $< 0.001$ \\
+ & LSF vs. FCFS     & $+6.39 \pm 0.30$ & $[+5.81,\; +6.97]$ & $+1.42\%$ & $21.51$ & $< 0.001$ \\
+ & MGS vs. FCFS     & $+9.83 \pm 0.30$ & $[+9.23,\; +10.43]$ & $+2.19\%$ & $32.28$ & $< 0.001$ \\
+ & CMU-MGS vs. FCFS & $\mathbf{+10.48 \pm 0.29}$ & $[+9.92,\; +11.05]$ & $+2.33\%$ & $36.31$ & $< 0.001$ \\
+ & AUSTERE vs. FCFS & $+9.58 \pm 0.31$ & $[+8.98,\; +10.18]$ & $+2.13\%$ & $31.24$ & $< 0.001$ \\
 \midrule
 \multirow{5}{*}{\textbf{1.60}}
- & MSF vs. FCFS     & $+11.35 \pm 0.38$ & $[+10.59,\; +12.10]$ & $+2.63\%$ & $29.49$ & $< 0.001$ \\
- & LSF vs. FCFS     & $+15.33 \pm 0.36$ & $[+14.63,\; +16.03]$ & $+3.56\%$ & $43.01$ & $< 0.001$ \\
- & MGS vs. FCFS     & $+19.98 \pm 0.34$ & $[+19.31,\; +20.65]$ & $+4.63\%$ & $58.37$ & $< 0.001$ \\
- & AUSTERE vs. FCFS & $+20.13 \pm 0.38$ & $[+19.38,\; +20.89]$ & $+4.67\%$ & $52.35$ & $< 0.001$ \\
- & CMU-MGS vs. FCFS & $\mathbf{+20.80 \pm 0.36}$ & $[+20.09,\; +21.50]$ & $+4.82\%$ & $58.06$ & $< 0.001$ \\
+ & MSF vs. FCFS     & $+14.12 \pm 0.38$ & $[+13.38,\; +14.86]$ & $+2.75\%$ & $37.30$ & $< 0.001$ \\
+ & LSF vs. FCFS     & $+12.32 \pm 0.42$ & $[+11.51,\; +13.14]$ & $+2.40\%$ & $29.60$ & $< 0.001$ \\
+ & MGS vs. FCFS     & $+17.19 \pm 0.41$ & $[+16.39,\; +17.99]$ & $+3.35\%$ & $42.09$ & $< 0.001$ \\
+ & CMU-MGS vs. FCFS & $\mathbf{+18.66 \pm 0.42}$ & $[+17.85,\; +19.48]$ & $+3.64\%$ & $44.79$ & $< 0.001$ \\
+ & AUSTERE vs. FCFS & $+16.85 \pm 0.42$ & $[+16.02,\; +17.67]$ & $+3.28\%$ & $40.01$ & $< 0.001$ \\
 \bottomrule
 \end{tabular}
 }
@@ -444,13 +467,13 @@ Table \ref{tab:paired_stats} and Figure \ref{fig:paired_gain} report the Common 
     \label{fig:paired_gain}
 \end{figure}
 
-At low traffic intensity ($\rho = 0.70$), because variance reduction under CRN is substantial, small differences in how occasional bursts of arrivals are ordered produce statistically detectable $t$-statistics for MGS, CMU-MGS, and AUSTERE ($p_{\text{Holm}} < 0.001$), whereas LSF is statistically indistinguishable from FCFS ($p_{\text{Holm}} = 0.167$). In practical operational terms, however, the effect size at $\rho = 0.70$ is negligible across all rules ($\Delta S \le 0.21$ lives over 60 days, or $< 0.09\%$ relative survival gain).
+At low traffic intensity ($\rho = 0.70$), because variance reduction under CRN is substantial, small differences in how occasional bursts of arrivals are ordered produce statistically detectable differences for MSF, MGS, CMU-MGS, and AUSTERE ($p_{\text{Holm}} < 0.001$), whereas LSF is statistically indistinguishable from FCFS ($p_{\text{Holm}} = 0.200$). In practical operational terms, however, the effect size at $\rho = 0.70$ is negligible across all rules ($\Delta S \le 0.23$ lives over 60 days, or $< 0.08\%$ relative survival gain).
 
-As traffic intensity reaches moderate ($\rho = 1.30$) and severe ($\rho = 1.60$) scarcity, clinically meaningful differences emerge. At $\rho = 1.60$, CMU-MGS saves $+20.80 \pm 0.36$ more expected lives than FCFS ($+4.82\%$, $p_{\text{Holm}} < 0.001$), outperforming AUSTERE ($+20.13 \pm 0.38$), greedy MGS ($+19.98 \pm 0.34$), LSF ($+15.33 \pm 0.36$), and MSF ($+11.35 \pm 0.38$). In a direct paired test at $\rho = 1.60$ under the baseline parameter $\beta = 1.2$, CMU-MGS outperforms greedy MGS by $+0.81 \pm 0.25$ expected lives ($t = 3.25, p = 0.0016$), confirming that normalizing marginal benefit by expected stay improves survival even under moderate severity--LOS correlation.
+As traffic intensity reaches moderate ($\rho = 1.30$) and severe ($\rho = 1.60$) scarcity, clinically meaningful differences emerge. At $\rho = 1.60$, CMU-MGS saves $+18.66 \pm 0.42$ more expected lives than FCFS ($+3.64\%$, $p_{\text{Holm}} < 0.001$), outperforming greedy MGS ($+17.19 \pm 0.41$), AUSTERE ($+16.85 \pm 0.42$), MSF ($+14.12 \pm 0.38$), and LSF ($+12.32 \pm 0.42$). In a direct paired test at $\rho = 1.60$ under the baseline parameter $\beta = 1.2$, CMU-MGS outperforms greedy MGS by $+1.48 \pm 0.26$ expected lives ($t = 5.71, p < 0.001$), confirming that normalizing marginal benefit by expected stay improves survival even under moderate severity--LOS coupling.
 
 \subsection{Disaggregated Waiting Times, Per-Pool Performance, and Overflow Ablation}
 
-Figure \ref{fig:waiting_times} displays the mean waiting time of admitted patients (Panel A) and the queue reneging rate (Panel B) across congestion levels. Under chronological FCFS at $\rho = 1.60$, every newly arriving candidate must wait behind the entire backlog of earlier arrivals, driving the mean waiting time of admitted patients to $18.27$ hours and exposing all admitted patients to substantial exponential survival decay under Eq. (\ref{eq:deterioration}). Under non-FCFS priority rules (CMU-MGS, MGS, LSF, AUSTERE, and MSF), high-priority candidates bypass the queue upon bed release, reducing the mean wait of admitted patients to $9.47$--$11.09$ hours while lower-priority patients remain at the back of the queue until reaching their reneging deadline ($30.1$--$31.5$ hours). Notably, the principled AUSTERE index (Eq. \ref{eq:austere}) maintains low admitted waiting times ($10.89$ hours at $\rho = 1.60$), avoiding the pathological deadline-chasing behavior of unbounded reciprocal urgency weights.
+Figure \ref{fig:waiting_times} displays the mean waiting time of admitted patients (Panel A) and the queue reneging rate (Panel B) across congestion levels. Under chronological FCFS at $\rho = 1.60$, every newly arriving candidate must wait behind the entire backlog of earlier arrivals, driving the mean waiting time of admitted patients to $18.27$ hours and exposing all admitted patients to substantial exponential survival decay under Eq. (\ref{eq:deterioration}). Under non-FCFS priority rules, high-priority candidates bypass the queue upon bed release, reducing the mean wait of admitted patients to $8.80$--$11.38$ hours while lower-priority patients remain at the back of the queue until reaching their reneging deadline ($29.8$--$32.7$ hours). Notice that because the heuristic AUSTERE rule (Eq. \ref{eq:austere}) boosts the score of candidates nearing their deadline, it admits slightly longer-waiting candidates ($11.38$ hours vs. $8.99$ hours under CMU-MGS) and achieves slightly lower total survival than pure CMU-MGS ($530.27$ vs. $532.09$ at $\rho = 1.60$).
 
 \begin{figure*}[t]
     \centering
@@ -459,74 +482,121 @@ Figure \ref{fig:waiting_times} displays the mean waiting time of admitted patien
     \label{fig:waiting_times}
 \end{figure*}
 
-Table \ref{tab:pool_ablation} reports the disaggregated admissions and occupancy rates across the four specialized pools at $\rho = 1.00$ and $\rho = 1.60$, together with the paired ablation of the hierarchical adult--coronary overflow mechanism ($\Delta S_{\text{overflow}} = S_{\text{exp}}^{\text{overflow ON}} - S_{\text{exp}}^{\text{overflow OFF}}$).
+Table \ref{tab:pool_ablation} reports the disaggregated admissions and occupancy rates across the four specialized pools across all four traffic intensities $\rho \in \{0.70, 1.00, 1.30, 1.60\}$, together with the paired ablation of the hierarchical adult--coronary overflow mechanism ($\Delta S_{\text{overflow}} = S_{\text{exp}}^{\text{overflow ON}} - S_{\text{exp}}^{\text{overflow OFF}}$), with $p$-values adjusted across all 12 ablation tests via the Holm--Bonferroni procedure.
 
 \begin{table*}[t]
 \centering
-\caption{Disaggregated per-pool admissions and occupancy (mean over 100 replications) and paired ablation of adult--coronary overflow pooling.}
+\caption{Disaggregated per-pool admissions and occupancy (mean over 100 replications) and paired ablation of adult--coronary overflow pooling ($p_{\text{Holm}}$ adjusted across all 12 tests).}
 \label{tab:pool_ablation}
 \resizebox{\textwidth}{!}{
 \begin{tabular}{clccccccccc}
 \toprule
  & & \multicolumn{4}{c}{\textbf{Disaggregated Admissions / Arrivals (Pool Occupancy \%)}} & \multicolumn{3}{c}{\textbf{Adult--Coronary Overflow Ablation (ON minus OFF)}} \\
 \cmidrule(lr){3-6} \cmidrule(lr){7-9}
-\textbf{Regime ($\rho$)} & \textbf{Policy} & \textbf{Adult (15 beds)} & \textbf{Coronary (10 beds)} & \textbf{Pediatric (10 beds)} & \textbf{Neonatal (20 beds)} & \textbf{$\Delta$ Admissions} & \textbf{$\Delta$ Expected Survivors} & \textbf{Paired $t$ ($p$-value)} \\
+\textbf{Regime ($\rho$)} & \textbf{Policy} & \textbf{Adult (15 beds)} & \textbf{Coronary (10 beds)} & \textbf{Pediatric (10 beds)} & \textbf{Neonatal (20 beds)} & \textbf{$\Delta$ Admissions} & \textbf{$\Delta$ Expected Survivors} & \textbf{Paired $t$ ($p_{\text{Holm}}$)} \\
 \midrule
 \multirow{3}{*}{\textbf{0.70}}
- & FCFS    & $96.9 / 97.9$ ($71.0\%$) & $88.0 / 88.8$ ($71.3\%$) & $69.2 / 70.1$ ($67.8\%$) & $71.4 / 73.1$ ($66.8\%$) & $+3.58 \pm 0.22$ & $+1.52 \pm 0.10$ & $t = 15.08$ ($p < 0.001$) \\
- & MGS     & $96.8 / 97.9$ ($70.9\%$) & $87.9 / 88.8$ ($71.2\%$) & $69.1 / 70.1$ ($67.7\%$) & $71.3 / 73.1$ ($66.8\%$) & $+4.01 \pm 0.23$ & $+1.42 \pm 0.09$ & $t = 15.87$ ($p < 0.001$) \\
- & CMU-MGS & $96.8 / 97.9$ ($70.9\%$) & $88.0 / 88.8$ ($71.1\%$) & $69.1 / 70.1$ ($67.6\%$) & $71.3 / 73.1$ ($66.7\%$) & $+3.93 \pm 0.23$ & $+1.40 \pm 0.09$ & $t = 15.38$ ($p < 0.001$) \\
+ & FCFS    & $97.1 / 97.5$ ($70.7\%$) & $87.3 / 87.8$ ($68.7\%$) & $67.6 / 70.1$ ($67.4\%$) & $73.5 / 74.5$ ($68.6\%$) & $+3.52 \pm 0.27$ & $+1.77 \pm 0.11$ & $t = 15.49$ ($p_{\text{Holm}} < 0.001$) \\
+ & MGS     & $97.1 / 97.5$ ($70.7\%$) & $87.2 / 87.8$ ($68.7\%$) & $67.5 / 70.1$ ($67.2\%$) & $73.4 / 74.5$ ($68.4\%$) & $+3.96 \pm 0.29$ & $+1.66 \pm 0.11$ & $t = 15.70$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $97.1 / 97.5$ ($70.7\%$) & $87.2 / 87.8$ ($68.7\%$) & $67.4 / 70.1$ ($67.2\%$) & $73.4 / 74.5$ ($68.4\%$) & $+3.89 \pm 0.29$ & $+1.65 \pm 0.11$ & $t = 15.55$ ($p_{\text{Holm}} < 0.001$) \\
 \midrule
 \multirow{3}{*}{\textbf{1.00}}
- & FCFS    & $129.8 / 139.8$ ($92.4\%$) & $113.0 / 124.3$ ($91.6\%$) & $85.9 / 99.4$ ($86.3\%$) & $92.5 / 104.1$ ($87.6\%$) & $+11.16 \pm 0.46$ & $+3.90 \pm 0.18$ & $t = 21.34$ ($p < 0.001$) \\
- & MGS     & $129.2 / 139.8$ ($92.0\%$) & $112.0 / 124.3$ ($91.0\%$) & $84.8 / 99.4$ ($85.8\%$) & $92.1 / 104.1$ ($87.2\%$) & $+11.81 \pm 0.45$ & $+3.40 \pm 0.14$ & $t = 24.94$ ($p < 0.001$) \\
- & CMU-MGS & $129.2 / 139.8$ ($91.9\%$) & $112.3 / 124.3$ ($90.8\%$) & $85.0 / 99.4$ ($85.6\%$) & $92.4 / 104.1$ ($87.2\%$) & $+11.78 \pm 0.44$ & $+3.46 \pm 0.14$ & $t = 25.38$ ($p < 0.001$) \\
+ & FCFS    & $129.9 / 139.8$ ($92.5\%$) & $112.8 / 124.3$ ($91.3\%$) & $85.9 / 99.4$ ($86.4\%$) & $92.4 / 104.1$ ($87.6\%$) & $+11.21 \pm 0.47$ & $+4.55 \pm 0.20$ & $t = 22.68$ ($p_{\text{Holm}} < 0.001$) \\
+ & MGS     & $128.8 / 139.8$ ($92.0\%$) & $112.1 / 124.3$ ($91.0\%$) & $84.8 / 99.4$ ($85.9\%$) & $91.8 / 104.1$ ($87.3\%$) & $+11.89 \pm 0.43$ & $+4.14 \pm 0.16$ & $t = 25.50$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $129.2 / 139.8$ ($91.9\%$) & $112.0 / 124.3$ ($90.8\%$) & $84.9 / 99.4$ ($85.7\%$) & $91.9 / 104.1$ ($87.3\%$) & $+11.89 \pm 0.42$ & $+4.27 \pm 0.16$ & $t = 26.97$ ($p_{\text{Holm}} < 0.001$) \\
 \midrule
 \multirow{3}{*}{\textbf{1.30}}
- & FCFS    & $139.6 / 181.2$ ($98.5\%$) & $117.1 / 160.7$ ($98.3\%$) & $94.9 / 128.8$ ($94.8\%$) & $101.8 / 134.5$ ($95.6\%$) & $+5.99 \pm 0.46$ & $+1.30 \pm 0.19$ & $t = 6.98$ ($p < 0.001$) \\
- & MGS     & $137.3 / 181.2$ ($98.3\%$) & $114.3 / 160.7$ ($98.0\%$) & $93.2 / 128.8$ ($94.3\%$) & $100.6 / 134.5$ ($95.2\%$) & $+7.17 \pm 0.45$ & $+1.49 \pm 0.17$ & $t = 8.54$ ($p < 0.001$) \\
- & CMU-MGS & $138.9 / 181.2$ ($98.2\%$) & $115.6 / 160.7$ ($97.9\%$) & $93.9 / 128.8$ ($94.2\%$) & $101.1 / 134.5$ ($95.1\%$) & $+7.17 \pm 0.46$ & $+1.56 \pm 0.19$ & $t = 8.26$ ($p < 0.001$) \\
+ & FCFS    & $139.9 / 177.5$ ($98.8\%$) & $118.9 / 162.9$ ($98.5\%$) & $94.6 / 130.6$ ($94.5\%$) & $99.9 / 134.2$ ($95.5\%$) & $+6.09 \pm 0.51$ & $+1.42 \pm 0.19$ & $t = 7.55$ ($p_{\text{Holm}} < 0.001$) \\
+ & MGS     & $137.2 / 177.5$ ($98.5\%$) & $116.9 / 162.9$ ($98.3\%$) & $92.0 / 130.6$ ($94.5\%$) & $98.8 / 134.2$ ($95.2\%$) & $+7.56 \pm 0.52$ & $+1.98 \pm 0.17$ & $t = 11.40$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $138.8 / 177.5$ ($98.4\%$) & $118.3 / 162.9$ ($98.0\%$) & $92.2 / 130.6$ ($94.4\%$) & $98.9 / 134.2$ ($95.2\%$) & $+8.63 \pm 0.59$ & $+2.41 \pm 0.20$ & $t = 12.21$ ($p_{\text{Holm}} < 0.001$) \\
 \midrule
 \multirow{3}{*}{\textbf{1.60}}
- & FCFS    & $142.9 / 222.1$ ($99.8\%$) & $118.3 / 198.1$ ($99.8\%$) & $97.5 / 158.8$ ($98.0\%$) & $103.3 / 165.7$ ($98.4\%$) & $+0.44 \pm 0.40$ & $-0.31 \pm 0.21$ & $t = -1.46$ ($p = 0.145$) \\
- & MGS     & $140.9 / 222.1$ ($99.7\%$) & $115.1 / 198.1$ ($99.7\%$) & $95.3 / 158.8$ ($97.8\%$) & $100.4 / 165.7$ ($98.2\%$) & $+1.87 \pm 0.40$ & $+0.27 \pm 0.18$ & $t = 1.51$ ($p = 0.132$) \\
- & CMU-MGS & $143.6 / 222.1$ ($99.7\%$) & $117.5 / 198.1$ ($99.6\%$) & $96.0 / 158.8$ ($97.7\%$) & $102.1 / 165.7$ ($98.0\%$) & $+2.72 \pm 0.42$ & $+0.39 \pm 0.20$ & $t = 1.95$ ($p = 0.052$) \\
+ & FCFS    & $143.1 / 222.1$ ($99.8\%$) & $118.5 / 198.1$ ($99.8\%$) & $97.5 / 158.8$ ($97.9\%$) & $103.0 / 165.7$ ($98.3\%$) & $+1.13 \pm 0.59$ & $-0.09 \pm 0.23$ & $t = -0.40$ ($p_{\text{Holm}} = 1.000$) \\
+ & MGS     & $139.9 / 222.1$ ($99.7\%$) & $113.1 / 198.1$ ($99.7\%$) & $94.1 / 158.8$ ($97.8\%$) & $99.7 / 165.7$ ($98.1\%$) & $+1.28 \pm 0.61$ & $+0.03 \pm 0.22$ & $t = 0.13$ ($p_{\text{Holm}} = 1.000$) \\
+ & CMU-MGS & $143.4 / 222.1$ ($99.7\%$) & $115.5 / 198.1$ ($99.6\%$) & $95.0 / 158.8$ ($97.8\%$) & $100.3 / 165.7$ ($98.1\%$) & $+2.26 \pm 0.63$ & $+0.51 \pm 0.22$ & $t = 2.39$ ($p_{\text{Holm}} = 0.050$) \\
 \bottomrule
 \end{tabular}
 }
 \end{table*}
 
-The ablation study in Table \ref{tab:pool_ablation} reveals a classic queueing pooling phenomenon. Cross-unit overflow between the 15-bed Adult ICU and 10-bed Coronary Unit is most impactful at balanced traffic ($\rho = 1.00$), where asynchronous random bursts temporarily saturate one unit while the partner unit has idle beds: enabling overflow admits $+11.78$ additional patients and saves $+3.46 \pm 0.14$ expected lives under CMU-MGS ($t = 25.38, p < 0.001$) and $+3.90 \pm 0.18$ lives under FCFS. Significant gains also occur at $\rho = 0.70$ ($+1.40$ lives, $p < 0.001$) and $\rho = 1.30$ ($+1.56$ lives, $p < 0.001$). Conversely, at extreme overload ($\rho = 1.60$), both the adult and coronary pools are continuously saturated ($99.6\%$--$99.8\%$ occupancy) with persistent native queues, leaving almost no idle capacity for cross-unit sharing ($\Delta S = +0.39 \pm 0.20, p = 0.052$).
+The ablation study in Table \ref{tab:pool_ablation} reveals a classic queueing pooling phenomenon. Cross-unit overflow between the 15-bed Adult ICU and 10-bed Coronary Unit is most impactful at balanced traffic ($\rho = 1.00$), where asynchronous random bursts temporarily saturate one unit while the partner unit has idle beds: enabling overflow admits $+11.89$ additional patients and saves $+4.27 \pm 0.16$ expected lives under CMU-MGS ($t = 26.97, p_{\text{Holm}} < 0.001$) and $+4.55 \pm 0.20$ lives under FCFS ($p_{\text{Holm}} < 0.001$). Statistically significant gains also occur at $\rho = 0.70$ ($+1.65$ to $+1.77$ lives, $p_{\text{Holm}} < 0.001$) and $\rho = 1.30$ ($+1.42$ to $+2.41$ lives, $p_{\text{Holm}} < 0.001$). Conversely, at extreme overload ($\rho = 1.60$), both the adult and coronary pools are continuously saturated ($99.6\%$--$99.8\%$ occupancy) with persistent native queues, leaving almost no idle capacity for cross-unit sharing ($\Delta S = -0.09$ to $+0.51$, $p_{\text{Holm}} \ge 0.050$).
 
-\subsection{Sensitivity Analysis: Imperfect Information and Severity--LOS Regimes}
+\subsection{Sensitivity Analysis: Imperfect Information, Severity--LOS Regimes, and Reneging Payoffs}
 
-To address how informational errors and clinical parameter variations affect policy rankings, Figure \ref{fig:sensitivity} presents two complementary sensitivity experiments at $\rho = 1.60$: (Panel A) simultaneous observation noise $\sigma_{\text{noise}} \in \{0.00, 0.05, 0.10, 0.20\}$ applied to $P_{\text{out}}^i$, $P_{\text{in},0}^i$, and $\mathbb{E}[\text{LOS}_i]$ across all 100 replications (Eq. \ref{eq:noisy_inputs}); and (Panel B) a 20-cell parametric heatmap over severity--LOS coupling $\beta \in \{0.0, 0.6, 1.2, 1.8, 2.4\}$ and queue deterioration rate $\alpha_{\text{det}} \in \{0.05, 0.18, 0.35, 0.50\}\text{ day}^{-1}$.
+To evaluate how informational errors, negative or positive severity--LOS coupling, and pre-ICU mortality among reneging patients affect policy rankings, we conduct three sensitivity experiments at $\rho = 1.60$.
 
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.92\textwidth]{fig_sensitivity.png}
-    \caption{Sensitivity analysis at severe congestion ($\rho = 1.60$): (A) expected survivors across 100 replications under simultaneous observation noise $\sigma_{\text{noise}} \in \{0.00, 0.05, 0.10, 0.20\}$ affecting $P_{\text{out}}$, $P_{\text{in},0}$, and $\mathbb{E}[\text{LOS}]$; (B) parametric heatmap of the paired survival gain of CMU-MGS over greedy MGS ($\Delta S_{\text{CMU}-\text{MGS}}$) across severity--LOS coupling $\beta$ and queue deterioration rate $\alpha_{\text{det}}$.}
+    \caption{Sensitivity analysis at severe congestion ($\rho = 1.60$): (A) expected survivors across 100 replications under simultaneous observation noise $\sigma_{\text{noise}} \in \{0.00, 0.05, 0.10, 0.20\}$ affecting $P_{\text{out}}$, $P_{\text{in},0}$, and $\mathbb{E}[\text{LOS}]$; (B) 24-cell parametric heatmap of the paired survival gain of CMU-MGS over greedy MGS ($\Delta S_{\text{CMU}-\text{MGS}}$) across severity--LOS coupling $\beta \in \{-0.6, 0.0, 0.6, 1.2, 1.8, 2.4\}$ and queue deterioration rate $\alpha_{\text{det}} \in \{0.05, 0.18, 0.35, 0.50\}\text{ day}^{-1}$ ($*$ indicates $p_{\text{Holm}} < 0.05$ across the 24 tests).}
     \label{fig:sensitivity}
 \end{figure*}
 
 \subsubsection{Robustness to Multi-Parameter Clinical Noise}
-As shown in Figure \ref{fig:sensitivity}A, when prognostic probabilities and expected stay estimates are perturbed by Gaussian noise, all five clinical policies degrade gracefully while remaining strictly superior to chronological FCFS ($431.14 \pm 1.13$ survivors, which requires no clinical information). At moderate estimation noise ($\sigma_{\text{noise}} = 0.10$), MGS ($446.92 \pm 1.22$, $\Delta S = +15.79, p_{\text{Holm}} < 0.001$), CMU-MGS ($446.82 \pm 1.20$, $\Delta S = +15.68, p_{\text{Holm}} < 0.001$), and AUSTERE ($446.28 \pm 1.21$, $\Delta S = +15.15, p_{\text{Holm}} < 0.001$) retain over $75\%$ of their noise-free survival advantage over FCFS. Under severe noise ($\sigma_{\text{noise}} = 0.20$), because CMU-MGS compounds ratio estimation errors in both numerator ($\widetilde{\Delta P}_i$) and denominator ($\widetilde{\mathbb{E}}[\text{LOS}_i]$), single-ratio MGS edges ahead slightly ($444.00$ vs. $443.40$ survivors), though both still save over $+12.2$ expected lives relative to FCFS ($p_{\text{Holm}} < 0.001$). Consistent with Argon and Ziya \cite{argon2009priority}, simpler index structures become attractive when both prognostic and duration estimates are highly imprecise.
+As shown in Figure \ref{fig:sensitivity}A, when prognostic probabilities and expected stay estimates are perturbed by simultaneous Gaussian noise, all five clinical policies degrade gracefully while remaining strictly and statistically superior to chronological FCFS ($513.42 \pm 1.37$ survivors) across the entire noise range. At $\sigma_{\text{noise}} = 0.10$, the paired gains over FCFS remain highly significant for all five rules: MGS ($+14.89 \pm 0.35$, $t = 42.92$), CMU-MGS ($+13.88 \pm 0.39$, $t = 35.65$), MSF ($+12.83 \pm 0.37$, $t = 34.62$), AUSTERE ($+12.73 \pm 0.41$, $t = 31.24$), and LSF ($+11.85 \pm 0.41$, $t = 28.93$), all with $p_{\text{Holm}} < 0.001$. Even under severe simultaneous noise ($\sigma_{\text{noise}} = 0.20$), all five clinical policies maintain a large, statistically significant survival advantage over FCFS: MGS saves $+12.82 \pm 0.37$ lives ($526.24$ total, $t = 34.43$), CMU-MGS saves $+11.82 \pm 0.41$ lives ($525.24$ total, $t = 28.82$), MSF saves $+11.67 \pm 0.38$ lives ($525.09$ total, $t = 30.99$), AUSTERE saves $+11.15 \pm 0.34$ lives ($524.57$ total, $t = 32.61$), and LSF saves $+10.41 \pm 0.40$ lives ($523.83$ total, $t = 26.14$), all with $p_{\text{Holm}} < 0.001$. Notice that when $\sigma_{\text{noise}} \ge 0.10$, because CMU-MGS compounds estimation error in both its numerator ($\widetilde{\Delta P}_i$) and denominator ($\widetilde{\mathbb{E}}[\text{LOS}_i]$), unnormalized MGS edges ahead slightly ($526.24$ vs. $525.24$ at $\sigma_{\text{noise}} = 0.20$), consistent with the theoretical findings of Argon and Ziya \cite{argon2009priority}.
 
-\subsubsection{When Does $c\mu$ Triage Outperform Greedy Marginal Gain?}
-Figure \ref{fig:sensitivity}B resolves the structural relationship between greedy MGS and duration-normalized CMU-MGS across clinical regimes:
+\subsubsection{Direction and Strength of Severity--LOS Coupling ($\beta \in [-0.6, 2.4]$)}
+In intensive care medicine, the empirical relationship between physiological severity and length of stay is non-monotonic: while higher severity among survivors requires longer mechanical ventilation ($\beta > 0$), patients with extreme severity who die early in the ICU often have truncated stays ($\beta < 0$) \cite{soares2024orchestra, zampieri2019icu}. Figure \ref{fig:sensitivity}B maps the paired survival gain of CMU-MGS over MGS across 24 parameter cells spanning $\beta \in \{-0.6, 0.0, 0.6, 1.2, 1.8, 2.4\}$ and $\alpha_{\text{det}} \in \{0.05, 0.18, 0.35, 0.50\}\text{ day}^{-1}$, with significance asterisks indicating Holm--Bonferroni adjusted $p_{\text{Holm}} < 0.05$ across all 24 cells:
 \begin{itemize}
-    \item \textbf{Severity-Independent LOS ($\beta = 0.0$):} When all patients in pool $j$ share the same expected stay $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$ regardless of severity, the denominator in Eq. (\ref{eq:cmu_mgs}) is constant within each pool. Consequently, CMU-MGS and MGS induce identical priority orderings ($\Delta S_{\text{CMU}-\text{MGS}} = 0.00$ across all $\alpha_{\text{det}}$).
-    \item \textbf{Weak Severity--LOS Coupling ($\beta = 0.6$):} When LOS varies modestly with severity, CMU-MGS and MGS perform similarly ($\Delta S_{\text{CMU}-\text{MGS}} \in [-0.17, +0.55]$ lives), indicating that greedy marginal survival gain is already near-optimal.
-    \item \textbf{Strong Severity--LOS Coupling ($\beta \in \{1.8, 2.4\}$):} When critically ill patients with low $P_{\text{out}}^i$ require substantially longer stays than moderately ill candidates, greedy MGS repeatedly locks beds with long-stay admissions. In this regime, CMU-MGS achieves highly significant gains over MGS across all deterioration rates, saving $+1.98$ to $+2.94$ additional lives at $\beta = 1.8$ ($t \in [5.47, 7.77], p < 0.001$) and $+3.37$ to $+4.21$ additional lives at $\beta = 2.4$ ($t \in [8.32, 10.20], p < 0.001$).
-    \item \textbf{Impact of Rapid Queue Deterioration ($\alpha_{\text{det}} \in \{0.35, 0.50\}$):} As pre-ICU deterioration accelerates, the total survival advantage of CMU-MGS over FCFS expands dramatically---from $+15.32$ lives at $(\beta=1.2, \alpha_{\text{det}}=0.05)$ to $+31.83$ lives at $(\beta=1.2, \alpha_{\text{det}}=0.50)$---because chronological queueing allows high-benefit candidates to decay rapidly while waiting behind earlier arrivals.
+    \item \textbf{Negative Coupling ($\beta = -0.6$, Early In-ICU Mortality of Severe Cases):} When sicker patients have shorter expected stays, high marginal survival gain ($\Delta P_i$) and short stay ($\mathbb{E}[\text{LOS}_i]$) are already aligned. Consequently, MGS and CMU-MGS select nearly identical patients, and their difference is statistically indistinguishable from zero across all deterioration rates ($\Delta S_{\text{CMU}-\text{MGS}} \in [-0.21, +0.35]$, $p_{\text{Holm}} = 1.00$), while both rules outperform FCFS by $+18.9$ to $+37.2$ lives.
+    \item \textbf{Zero or Weak Positive Coupling ($\beta \in \{0.0, 0.6\}$):} At $\beta = 0.0$, $\mathbb{E}[\text{LOS}_i] = \mu_{\text{los}, j}$ is constant within each pool, so CMU-MGS and MGS produce identical rankings ($\Delta S_{\text{CMU}-\text{MGS}} = 0.00$). At $\beta = 0.6$, differences remain small and exploratory ($\Delta S_{\text{CMU}-\text{MGS}} \in [-0.06, +0.67]$, $p_{\text{Holm}} = 1.00$).
+    \item \textbf{Moderate to Strong Positive Coupling ($\beta \in \{1.2, 1.8, 2.4\}$):} When severe patients require longer stays, greedy MGS locks beds with long-stay admissions. At the baseline cell $(\beta=1.2, \alpha_{\text{det}}=0.18)$, CMU-MGS saves $+1.42 \pm 0.34$ more lives than MGS ($t = 4.19, p_{\text{Holm}} < 0.001$). For $\beta = 1.8$ and $\beta = 2.4$, CMU-MGS significantly outperforms MGS across every deterioration rate ($p_{\text{Holm}} < 0.001$ in all 8 cells), saving $+2.09$ to $+2.49$ additional lives at $\beta = 1.8$ and $+4.22$ to $+4.99$ additional lives at $\beta = 2.4$.
 \end{itemize}
+
+\subsubsection{Sensitivity to Reneging Survival Payoff ($\theta_{\text{ren}} \in \{1.0, 0.5, 0.0\}$)}
+\label{sec:reneging_sensitivity}
+In our baseline specification ($\theta_{\text{ren}} = 1.0$), every patient who reneges after reaching $W_{\max}^i$ receives the counterfactual ward survival probability $P_{\text{out}}^i$. However, because $W_{\max}^i$ encompasses pre-ICU death as well as ward stabilization or transfer, attributing the full $P_{\text{out}}^i$ to all abandonments could favor policies with higher reneging rates (such as MSF and MGS) over high-throughput policies (such as LSF and CMU-MGS). Table \ref{tab:reneging_payoff} evaluates all six policies at $\rho = 1.60$ across 100 replications under three reneging survival retention factors: $\theta_{\text{ren}} = 1.0$ (baseline ward survival), $\theta_{\text{ren}} = 0.5$ (50\% survival penalty upon reneging, representing a 50/50 mixture of ward transfer and pre-ICU death), and $\theta_{\text{ren}} = 0.0$ (100\% pre-ICU mortality upon reneging).
+
+\begin{table*}[t]
+\centering
+\caption{Sensitivity of policy performance and rankings at $\rho = 1.60$ (100 CRN replications) to the reneging survival retention factor $\theta_{\text{ren}} \in \{1.0, 0.5, 0.0\}$, where reneging patients survive with probability $\theta_{\text{ren}} P_{\text{out}}^i$.}
+\label{tab:reneging_payoff}
+\resizebox{0.94\textwidth}{!}{
+\begin{tabular}{clccccc}
+\toprule
+\textbf{Reneging Payoff ($\theta_{\text{ren}}$)} & \textbf{Policy} & \textbf{Admitted Patients} & \textbf{Reneging Rate} & \textbf{Expected Survivors} & \textbf{Paired Gain vs. FCFS ($\Delta S$)} & \textbf{CMU-MGS Advantage} \\
+\midrule
+\multirow{6}{*}{$\boldsymbol{\theta_{\text{ren}} = 1.0}$ \textbf{(Full $P_{\text{out}}^i$)}}
+ & FCFS    & $462.1 \pm 1.4$ & $37.9\%$ & $513.42 \pm 1.37$ & Baseline & $+18.66 \pm 0.42$ ($p_{\text{Holm}} < 0.001$) \\
+ & MSF     & $444.5 \pm 1.4$ & $40.2\%$ & $527.54 \pm 1.45$ & $+14.12 \pm 0.38$ & $+4.54 \pm 0.27$ ($p_{\text{Holm}} < 0.001$) \\
+ & LSF     & $472.0 \pm 1.4$ & $36.6\%$ & $525.74 \pm 1.42$ & $+12.32 \pm 0.42$ & $+6.34 \pm 0.33$ ($p_{\text{Holm}} < 0.001$) \\
+ & MGS     & $446.8 \pm 1.4$ & $39.9\%$ & $530.61 \pm 1.46$ & $+17.19 \pm 0.41$ & $+1.48 \pm 0.26$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $454.2 \pm 1.4$ & $38.9\%$ & $\mathbf{532.09 \pm 1.46}$ & $\mathbf{+18.66 \pm 0.42}$ & \textbf{Rank 1} \\
+ & AUSTERE & $454.0 \pm 1.4$ & $39.0\%$ & $530.27 \pm 1.43$ & $+16.85 \pm 0.42$ & $+1.82 \pm 0.19$ ($p_{\text{Holm}} < 0.001$) \\
+\midrule
+\multirow{6}{*}{$\boldsymbol{\theta_{\text{ren}} = 0.5}$ \textbf{($0.5 \times P_{\text{out}}^i$)}}
+ & FCFS    & $462.1 \pm 1.4$ & $37.9\%$ & $444.23 \pm 1.13$ & Baseline & $+19.19 \pm 0.63$ ($p_{\text{Holm}} < 0.001$) \\
+ & MSF     & $444.5 \pm 1.4$ & $40.2\%$ & $445.67 \pm 1.13$ & $+1.45 \pm 0.60$ & $+17.74 \pm 0.59$ ($p_{\text{Holm}} < 0.001$) \\
+ & LSF     & $472.0 \pm 1.4$ & $36.6\%$ & $463.35 \pm 1.17$ & $+19.12 \pm 0.62$ & $+0.07 \pm 0.43$ ($p_{\text{Holm}} = 0.878$) \\
+ & MGS     & $456.5 \pm 1.4$ & $38.6\%$ & $458.01 \pm 1.14$ & $+13.78 \pm 0.59$ & $+5.41 \pm 0.50$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $475.5 \pm 1.4$ & $36.1\%$ & $\mathbf{463.42 \pm 1.13}$ & $\mathbf{+19.19 \pm 0.63}$ & \textbf{Rank 1} \\
+ & AUSTERE & $477.7 \pm 1.4$ & $35.8\%$ & $460.71 \pm 1.13$ & $+16.48 \pm 0.65$ & $+2.71 \pm 0.42$ ($p_{\text{Holm}} < 0.001$) \\
+\midrule
+\multirow{6}{*}{$\boldsymbol{\theta_{\text{ren}} = 0.0}$ \textbf{(Zero Payoff)}}
+ & FCFS    & $462.1 \pm 1.4$ & $37.9\%$ & $375.03 \pm 1.18$ & Baseline & $+29.84 \pm 0.86$ ($p_{\text{Holm}} < 0.001$) \\
+ & MSF     & $444.5 \pm 1.4$ & $40.2\%$ & $363.81 \pm 1.16$ & $-11.22 \pm 0.89$ & $+41.06 \pm 0.88$ ($p_{\text{Holm}} < 0.001$) \\
+ & LSF     & $472.0 \pm 1.4$ & $36.6\%$ & $400.96 \pm 1.24$ & $+25.93 \pm 0.86$ & $+3.91 \pm 0.67$ ($p_{\text{Holm}} < 0.001$) \\
+ & MGS     & $472.0 \pm 1.4$ & $36.6\%$ & $400.96 \pm 1.24$ & $+25.93 \pm 0.86$ & $+3.91 \pm 0.67$ ($p_{\text{Holm}} < 0.001$) \\
+ & CMU-MGS & $478.9 \pm 1.4$ & $35.6\%$ & $\mathbf{404.87 \pm 1.20}$ & $\mathbf{+29.84 \pm 0.86}$ & \textbf{Rank 1} \\
+ & AUSTERE & $480.7 \pm 1.4$ & $35.4\%$ & $403.90 \pm 1.21$ & $+28.87 \pm 0.88$ & $+0.97 \pm 0.56$ ($p_{\text{Holm}} = 0.086$) \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+Table \ref{tab:reneging_payoff} confirms the referee's structural insight and reveals three important operational results:
+\begin{enumerate}[(1)]
+    \item \textbf{Penalization of High-Reneging Policies (MSF and Unnormalized MGS):} When reneging patients receive only $0.5 \times P_{\text{out}}^i$ ($\theta_{\text{ren}} = 0.5$), MSF---which has the highest reneging rate ($40.2\%$) because it locks beds with long-stay severe patients---sees its advantage over FCFS collapse from $+14.12$ lives to $+1.45$ lives (and becomes strictly worse than FCFS, $-11.22$ lives, when $\theta_{\text{ren}} = 0.0$).
+    \item \textbf{Surge of LSF and Expansion of the CMU-MGS Advantage over MGS:} Because LSF admits shorter-stay patients with high $P_{\text{in}}^i$, its lower reneging rate ($36.6\%$) causes it to overtake greedy MGS at $\theta_{\text{ren}} = 0.5$ ($463.35$ vs. $458.01$ survivors). Simultaneously, because CMU-MGS incorporates the net benefit $P_{\text{in}}^i(w) - \theta_{\text{ren}} P_{\text{out}}^i$ divided by $\mathbb{E}[\text{LOS}_i]$ (Eq. \ref{eq:cmu_mgs}), it naturally increases bed turnover as $\theta_{\text{ren}}$ decreases, expanding its admissions from $454.2$ ($\theta_{\text{ren}}=1.0$) to $475.5$ ($\theta_{\text{ren}}=0.5$) and $478.9$ ($\theta_{\text{ren}}=0.0$). Consequently, the paired advantage of CMU-MGS over greedy MGS \textit{increases} more than threefold at $\theta_{\text{ren}} = 0.5$, rising from $+1.48 \pm 0.26$ lives to $\mathbf{+5.41 \pm 0.50}$ lives ($t = 10.77, p_{\text{Holm}} < 0.001$).
+    \item \textbf{Invariance of the Top Policy:} At $\theta_{\text{ren}} = 0.0$, where every abandonment is a death, $P_{\text{in}}^i(w) - \theta_{\text{ren}} P_{\text{out}}^i = P_{\text{in}}^i(w)$, so MGS and LSF become mathematically identical ($400.96$ survivors), whereas CMU-MGS ($P_{\text{in}}^i(w)/\mathbb{E}[\text{LOS}_i]$) remains the top-ranked policy ($404.87$ survivors), outperforming both MGS/LSF by $+3.91 \pm 0.67$ lives ($p_{\text{Holm}} < 0.001$) and FCFS by $+29.84 \pm 0.86$ lives.
+\end{enumerate}
 
 \section{Limitations and Ethical Considerations}
 \label{sec:limitations}
 
 Translating operations research models into clinical triage guidelines requires explicit recognition of modeling boundaries and bioethical constraints:
 \begin{enumerate}[(1)]
-    \item \textbf{Empirical Calibration vs. Patient-Level Electronic Health Records:} While our bed capacities are taken directly from DATASUS/CNES for HU-UFMA and specialty-level LOS and mortality distributions are calibrated from published national registries (AMIB/Epimed and RBPN), individual patient trajectories are simulated parametrically rather than replayed from de-identified patient-level electronic health records (EHR). Future clinical deployment requires fitting joint survival--duration copulas directly to local hospital EHR streams.
+    \item \textbf{Registry-Level Calibration vs. Patient-Level Electronic Health Records:} While our bed capacities are taken directly from DATASUS/CNES for HU-UFMA and specialty-level LOS and admitted mortality rates are calibrated to match national registries (AMIB/Epimed and RBPN), individual counterfactual baseline survival ($P_{\text{out}}^i$) and ICU efficacy ($g_i$) are unobserved in admitted-only registries and are modeled parametrically (Table \ref{tab:calibration_params}). Future clinical deployment requires fitting joint survival--duration copulas to de-identified patient-level electronic health records (EHR) that include both admitted and refused/ward-managed referrals.
     \item \textbf{Prognostic Uncertainty and Algorithmic Equity:} Efficiency-oriented policies (MGS, CMU-MGS, AUSTERE) rely on prognostic survival and LOS estimates. In clinical practice, severity scores such as SOFA and SAPS 3 exhibit calibration drift across demographic and socioeconomic groups \cite{White_2021, aquino2022ethical}. Furthermore, pure $c\mu$ prioritization systematically penalizes patients with chronic comorbidities or severe multi-organ dysfunction whose expected recovery time $\mathbb{E}[\text{LOS}_i]$ is protracted. Triage committees should therefore embed index scores within multi-principle frameworks \cite{White_2021} that incorporate equity safeguards, age/life-cycle considerations, and periodic clinical reassessment rather than delegating admission decisions to an automated score alone.
     \item \textbf{Operational Scope:} Our discrete-event engine assumes stationary Poisson arrival rates within each 60-day regime, instantaneous bed turnaround upon discharge (omitting 2--4 hour sanitization delays), and no premature step-down discharge (demand-driven early discharge as in Chan et al. \cite{chan2012optimizing}). Incorporating non-homogeneous epidemic wave arrivals and dynamic step-down transfers represents a natural extension.
 \end{enumerate}
@@ -534,16 +604,16 @@ Translating operations research models into clinical triage guidelines requires 
 \section{Conclusions}
 \label{sec:conclusion}
 
-This paper developed and empirically calibrated a continuous-time discrete-event simulation and retrospective MILP benchmarking framework for dynamic multi-type ICU bed allocation under resource scarcity. Grounded in the 55-bed critical care structure of HU-UFMA (DATASUS/CNES) and specialty-specific parameters from Brazilian intensive care registries, our study yields four main conclusions:
+This paper developed a continuous-time discrete-event simulation and retrospective LP benchmarking framework for dynamic multi-type ICU bed allocation under resource scarcity. Grounded in the 55-bed critical care structure of HU-UFMA (DATASUS/CNES) and calibrated to match specialty-specific LOS and hospital mortality targets from Brazilian intensive care registries, our study yields four main conclusions:
 \begin{enumerate}[(1)]
-    \item \textbf{Value of Dynamic Triage Under Scarcity:} While admission rules have negligible practical impact when capacity is ample ($\rho = 0.70$, relative effect $< 0.1\%$), priority indices that account for marginal survival benefit and bed-time consumption (CMU-MGS and AUSTERE) save $20.13$--$20.80$ more expected lives than FCFS over a 60-day surge ($\rho = 1.60$, $+4.82\%$, $p_{\text{Holm}} < 0.001$) and reduce admitted patient waiting times by nearly half ($9.56$ vs. $18.27$ hours).
-    \item \textbf{Regime-Dependent Advantage of $c\mu$ Normalization:} Our parametric sensitivity analysis demonstrates that greedy marginal survival triage (MGS) suffices when length of stay is weakly correlated with severity ($\beta \le 0.6$). However, when severe patients require substantially longer ICU stays ($\beta \ge 1.8$), normalizing marginal benefit by expected bed-days (CMU-MGS) saves up to $+4.21$ additional expected lives over MGS ($p < 0.001$) by accelerating bed turnover.
-    \item \textbf{Targeted Benefit of Partial Bed Pooling:} Hierarchical overflow sharing between adult general and coronary care units provides substantial survival gains at moderate-to-balanced congestion ($\rho = 1.00$, saving $+3.46$ to $+3.90$ expected lives, $p < 0.001$), whereas its benefit vanishes under extreme overload ($\rho = 1.60$) once both units saturate simultaneously.
-    \item \textbf{Informational Robustness and Offline Benchmark:} Even under simultaneous Gaussian estimation noise ($\sigma_{\text{noise}} = 0.20$) across all survival and LOS inputs, clinical index rules preserve a highly significant advantage of $+12.2$ to $+12.9$ expected lives over FCFS ($p_{\text{Holm}} < 0.001$).
+    \item \textbf{Value of Dynamic Triage and Tightened LP Optimality Gap:} While admission rules have negligible practical impact when capacity is ample ($\rho = 0.70$, relative effect $< 0.08\%$), priority indices that account for marginal survival benefit and bed-time consumption (CMU-MGS) save $+18.66 \pm 0.42$ more expected lives than FCFS over a 60-day surge ($\rho = 1.60$, $+3.64\%$, $p_{\text{Holm}} < 0.001$) and cut admitted patient waiting times by half ($8.99$ vs. $18.27$ hours). While the pessimistic gap to a clairvoyant hindsight LP bound (which cherry-picks ultra-short realized stays) is $9.89\%$, evaluating CMU-MGS against a duration-expectation LP bound ($\mathbb{E}[\text{LOS}_i]$) shows that the online policy comes within $4.84\%$ of the offline optimum.
+    \item \textbf{Regime-Dependent Advantage of $c\mu$ Normalization:} Our 24-cell sensitivity analysis across $\beta \in [-0.6, 2.4]$ demonstrates that greedy marginal survival triage (MGS) suffices when length of stay is negatively or weakly correlated with severity ($\beta \le 0.6$). However, when severe patients require longer ICU stays ($\beta \ge 1.2$), normalizing marginal benefit by expected bed-days (CMU-MGS) saves $+1.42$ to $+4.99$ additional expected lives over MGS ($p_{\text{Holm}} < 0.001$) by accelerating bed turnover.
+    \item \textbf{Robustness to Reneging Mortality Payoffs and Clinical Noise:} When queue abandonment entails partial ($\theta_{\text{ren}} = 0.5$) or total ($\theta_{\text{ren}} = 0.0$) pre-ICU mortality, policies with high abandonment (MSF) collapse, whereas CMU-MGS remains the top-performing policy across all payoff regimes, expanding its advantage over greedy MGS to $+5.41$ lives at $\theta_{\text{ren}} = 0.5$. Similarly, under simultaneous Gaussian estimation noise ($\sigma_{\text{noise}} = 0.20$) across all clinical and LOS inputs, all five clinical policies maintain a highly significant advantage of $+10.41$ to $+12.82$ expected lives over FCFS ($p_{\text{Holm}} < 0.001$).
+    \item \textbf{Targeted Benefit of Partial Bed Pooling:} Hierarchical overflow sharing between adult general and coronary care units provides substantial survival gains at balanced congestion ($\rho = 1.00$, saving $+4.14$ to $+4.55$ expected lives, $p_{\text{Holm}} < 0.001$), whereas its benefit vanishes under extreme overload ($\rho = 1.60$) once both units saturate simultaneously.
 \end{enumerate}
 
 \section*{Data and Code Availability}
-All simulation source code, unit tests, DATASUS/CNES extraction files, configuration scripts, raw replication outputs (\texttt{runs.csv}, \texttt{offline\_ub.csv}, and sensitivity grids), and plotting scripts are openly available in the project's public repository at \url{https://github.com/MODAL-UFMA/alocacao-uti-web}.
+All simulation source code, unit tests, DATASUS/CNES extraction files, configuration scripts, raw replication outputs (\texttt{runs.csv}, \texttt{offline\_ub.csv}, and sensitivity grids), and plotting scripts are openly available in the project's public repository at \url{https://github.com/MODAL-UFMA/alocacao-uti-web} and archived with a permanent release tag (\texttt{v3.0-cor-r3}) and Zenodo metadata (\texttt{.zenodo.json}) for long-term reproducibility.
 
 \section*{CRediT Authorship Contribution Statement}
 \textbf{Carlos Eduardo Veras Gomes:} Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Writing -- original draft. \textbf{Jo\~ao Augusto Ferreira Nunes de Carvalho:} Methodology, Software, Data curation, Visualization, Writing -- original draft. \textbf{Francisco Glaubos Nunes Cl\'imaco:} Conceptualization, Methodology, Formal analysis, Supervision, Project administration, Writing -- review \& editing.

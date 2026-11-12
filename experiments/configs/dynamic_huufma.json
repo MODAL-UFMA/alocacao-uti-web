@@ -17,40 +17,40 @@
     "adult": {
       "mean_los_days": 6.5,
       "cv_los": 0.65,
-      "p_out_range": [0.10, 0.55],
-      "gain_fraction_range": [0.25, 0.75],
+      "p_out_range": [0.15, 0.55],
+      "gain_fraction_range": [0.45, 0.80],
       "max_wait_range": [0.5, 2.5],
       "alpha_det": 0.18
     },
     "coronary": {
       "mean_los_days": 4.8,
       "cv_los": 0.55,
-      "p_out_range": [0.20, 0.65],
-      "gain_fraction_range": [0.30, 0.80],
+      "p_out_range": [0.30, 0.70],
+      "gain_fraction_range": [0.55, 0.88],
       "max_wait_range": [0.5, 2.0],
       "alpha_det": 0.20
     },
     "pediatric": {
       "mean_los_days": 6.0,
       "cv_los": 0.65,
-      "p_out_range": [0.25, 0.70],
-      "gain_fraction_range": [0.35, 0.85],
+      "p_out_range": [0.40, 0.80],
+      "gain_fraction_range": [0.75, 0.96],
       "max_wait_range": [0.5, 2.5],
       "alpha_det": 0.15
     },
     "neonatal": {
       "mean_los_days": 11.5,
       "cv_los": 0.75,
-      "p_out_range": [0.15, 0.65],
-      "gain_fraction_range": [0.30, 0.85],
+      "p_out_range": [0.35, 0.75],
+      "gain_fraction_range": [0.70, 0.95],
       "max_wait_range": [0.5, 2.0],
       "alpha_det": 0.20
     }
   },
   "policies": [
     "FCFS",
-    "LSF",
     "MSF",
+    "LSF",
     "MGS",
     "CMU_MGS",
     "AUSTERE"

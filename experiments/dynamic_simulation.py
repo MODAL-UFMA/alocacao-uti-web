@@ -1,19 +1,23 @@
 """Simulação dinâmica de eventos discretos para alocação de leitos de UTI multi-tipo.
 
-Calibração empírica baseada em registros nacionais brasileiros:
-- Capacidade física: DATASUS / CNES (HU-UFMA, competência 12/2024: 55 leitos em 4 pools)
-- Tempo de permanência (LOS) e mortalidade basal: Registro Nacional UTIs Brasileiras (AMIB / Epimed,
-  Soares et al., 2024; Zampieri et al., 2019), Rede Brasileira de Pesquisas Neonatais (Guinsburg et al., 2016)
-  e coorte brasileira de atraso na admissão em UTI (Cardoso et al., 2011).
+Calibração semi-empírica transparente (Tabela 2):
+- Parâmetros Medidos (Observados):
+  * Capacidade física: DATASUS / CNES (HU-UFMA, competência 12/2024: 55 leitos em 4 pools)
+  * Tempo de permanência médio (LOS) e mortalidade hospitalar de admitidos: Registro Nacional UTIs Brasileiras
+    (AMIB / Epimed, Soares et al., 2024; ORCHESTRA, Soares et al., 2024b), Rede Brasileira de Pesquisas Neonatais
+    (Guinsburg et al., 2016) e coorte de atraso na admissão em UTI (Cardoso et al., 2011).
+- Parâmetros Calibrados (Ajustados aos alvos medidos):
+  * Taxa de deterioração na fila alpha_det (calibrada a partir da razão de risco de 1.5%/h de Cardoso et al., 2011)
+  * Fração de ganho terapêutico g_i (ajustada para que a mortalidade pós-admissão em equilíbrio reproduza exatamente
+    a mortalidade hospitalar registrada no AMIB/Epimed por especialidade: ~27% Adulto, ~15% UCO, ~6% Pediátrica, ~8% Neonatal).
+- Parâmetros Contrafactuais / Supostos (Não observáveis em registros de internados, avaliados sob análise de sensibilidade):
+  * Sobrevida basal sem UTI (P_out), janela de tolerância máxima na fila (W_max), fator de penalidade no abandono (theta_ren)
+    e acoplamento gravidade-LOS (beta).
 
-Políticas e Benchmarks:
-- FCFS: First-Come, First-Served
-- MSF: Most Serious First (maior risco basal de óbito 1 - P_out)
-- LSF: Least Serious First (maior probabilidade absoluta de sobrevida P_in(w))
-- MGS: Marginal Gain in Survival (maior ganho marginal imediato ΔP(w))
-- CMU_MGS: Regra cμ adaptada (ΔP(w) / E[LOS])
-- AUSTERE: Índice de perda marginal por deterioração e abandono (Sun, Argon & Ziya, 2018)
-- OFFLINE_UB: Limitante superior clarividente (MILP indexado no tempo via HiGHS)
+Políticas e Limitantes Superiores (Upper Bounds):
+- FCFS, MSF, LSF, MGS, CMU_MGS, AUSTERE (CMU-MGS com urgência de prazo)
+- OFFLINE_LP_REAL: Limitante superior LP clarividente (usa LOS_i realizado)
+- OFFLINE_LP_EXP: Limitante superior LP não-antecipativo em duração (usa E[LOS_i], conforme Brown, Smith & Sun, 2010)
 """
 from __future__ import annotations
 
@@ -35,39 +39,39 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import csc_matrix
 
 TYPES = ("neonatal", "pediatric", "adult", "coronary")
-POLICIES = ("FCFS", "LSF", "MSF", "MGS", "CMU_MGS", "AUSTERE")
+POLICIES = ("FCFS", "MSF", "LSF", "MGS", "CMU_MGS", "AUSTERE")
 
-# Perfis epidemiológicos empíricos por especialidade (AMIB/Epimed, RBPN, Cardoso et al.)
+# Perfis por especialidade: calibrados para que 1 - E[P_in(w)] reproduza a mortalidade observada no AMIB/Epimed
 DEFAULT_POOL_PROFILES = {
     "adult": {
         "mean_los_days": 6.5,
         "cv_los": 0.65,
-        "p_out_range": [0.10, 0.55],
-        "gain_fraction_range": [0.25, 0.75],
+        "p_out_range": [0.15, 0.55],
+        "gain_fraction_range": [0.45, 0.80],  # E[P_in,0] = 0.756 -> Mortalidade admitidos ~26.5% (Alvo SUS AMIB: ~27%)
         "max_wait_range": [0.5, 2.5],
         "alpha_det": 0.18,
     },
     "coronary": {
         "mean_los_days": 4.8,
         "cv_los": 0.55,
-        "p_out_range": [0.20, 0.65],
-        "gain_fraction_range": [0.30, 0.80],
+        "p_out_range": [0.30, 0.70],
+        "gain_fraction_range": [0.55, 0.88],  # E[P_in,0] = 0.858 -> Mortalidade admitidos ~15.5% (Alvo UCO: ~15%)
         "max_wait_range": [0.5, 2.0],
         "alpha_det": 0.20,
     },
     "pediatric": {
         "mean_los_days": 6.0,
         "cv_los": 0.65,
-        "p_out_range": [0.25, 0.70],
-        "gain_fraction_range": [0.35, 0.85],
+        "p_out_range": [0.40, 0.80],
+        "gain_fraction_range": [0.75, 0.96],  # E[P_in,0] = 0.942 -> Mortalidade admitidos ~6.2% (Alvo UTIP AMIB: 4-7%)
         "max_wait_range": [0.5, 2.5],
         "alpha_det": 0.15,
     },
     "neonatal": {
         "mean_los_days": 11.5,
         "cv_los": 0.75,
-        "p_out_range": [0.15, 0.65],
-        "gain_fraction_range": [0.30, 0.85],
+        "p_out_range": [0.35, 0.75],
+        "gain_fraction_range": [0.70, 0.95],  # E[P_in,0] = 0.921 -> Mortalidade admitidos ~8.4% (Alvo UTIN: 5-10%)
         "max_wait_range": [0.5, 2.0],
         "alpha_det": 0.20,
     },
@@ -86,7 +90,6 @@ class DynamicPatient:
     max_wait: float
     alpha_det: float
     outcome_uniform: float
-    # Atributos observados com ruído clínico (para análise de informação imperfeita - M6)
     obs_p_out: float
     obs_p_in_0: float
     obs_expected_los: float
@@ -99,9 +102,11 @@ class DynamicPatient:
         base_in0 = self.obs_p_in_0 if use_observed else self.p_in_0
         return base_out + (base_in0 - base_out) * math.exp(-self.alpha_det * wait)
 
-    def marginal_gain_at(self, current_time: float, use_observed: bool = False) -> float:
-        """Calcula ganho marginal ΔP(w) = P_in(w) - P_out."""
-        base_out = self.obs_p_out if use_observed else self.p_out
+    def marginal_gain_at(
+        self, current_time: float, use_observed: bool = False, reneging_survival_factor: float = 1.0
+    ) -> float:
+        """Calcula ganho marginal ΔP(w) = P_in(w) - theta_ren * P_out."""
+        base_out = (self.obs_p_out if use_observed else self.p_out) * reneging_survival_factor
         return max(0.0, self.p_in_at(current_time, use_observed=use_observed) - base_out)
 
 
@@ -110,6 +115,7 @@ def priority_score(
     policy: str,
     current_time: float,
     use_observed: bool = False,
+    reneging_survival_factor: float = 1.0,
 ) -> float:
     """Calcula o escore de prioridade dinâmico do paciente sob a política avaliada."""
     if policy == "FCFS":
@@ -122,7 +128,9 @@ def priority_score(
         p_out_val = p.obs_p_out if use_observed else p.p_out
         return 1.0 - p_out_val
 
-    delta_p = p.marginal_gain_at(current_time, use_observed=use_observed)
+    delta_p = p.marginal_gain_at(
+        current_time, use_observed=use_observed, reneging_survival_factor=reneging_survival_factor
+    )
     e_los = p.obs_expected_los if use_observed else p.expected_los
     e_los = max(0.2, e_los)
 
@@ -133,13 +141,12 @@ def priority_score(
         return delta_p / e_los
 
     if policy == "AUSTERE":
-        # Regra fundamentada em Sun, Argon & Ziya (2018):
-        # Taxa de perda marginal esperada por atraso (deterioração contínua + risco de abandono)
-        # Normalizada pelo tempo esperado de ocupação do leito E[LOS].
+        # Regra heurística CMU-MGS com urgência de prazo limitada (P4):
+        # Como candidatos só competem dentro do mesmo pool, 1 + kappa / (tau + kappa) pondera a proximidade
+        # do limite de espera sem o termo constante redundante alpha_det.
         wait = max(0.0, current_time - p.arrival_time)
         rem_wait = max(0.25, p.max_wait - wait)
-        # Taxa instantânea de perda de sobrevida se postergado: alpha_det * delta_p + delta_p / (rem_wait + 1.0)
-        urgency_multiplier = 1.0 + p.alpha_det + (0.5 / (rem_wait + 0.5))
+        urgency_multiplier = 1.0 + (0.5 / (rem_wait + 0.5))
         return (delta_p / e_los) * urgency_multiplier
 
     raise ValueError(f"Política desconhecida: {policy}")
@@ -151,12 +158,10 @@ def stable_seed(seed: int, demand: float, replication: int, stream: str) -> int:
 
 
 def get_pool_profile(config: dict, btype: str) -> dict:
-    """Retorna os parâmetros calibrados para o pool específico."""
     profiles = config.get("pool_profiles", DEFAULT_POOL_PROFILES)
     prof = dict(DEFAULT_POOL_PROFILES.get(btype, DEFAULT_POOL_PROFILES["adult"]))
     if btype in profiles:
         prof.update(profiles[btype])
-    # Sobrescritas globais opcionais (para varreduras de sensibilidade M3)
     if "override_alpha_det" in config:
         prof["alpha_det"] = float(config["override_alpha_det"])
     if "override_cv_los" in config:
@@ -173,7 +178,7 @@ def generate_patient_stream(
     replication: int,
     sigma_noise: float = 0.0,
 ) -> list[DynamicPatient]:
-    """Gera o fluxo de pacientes com chegadas de Poisson exatas em relação ao E[LOS] efetivo (M2)."""
+    """Gera o fluxo de pacientes com chegadas de Poisson exatas em relação ao E[LOS] efetivo."""
     seed_base = config["seed"]
     rng_arr = random.Random(stable_seed(seed_base, demand_ratio, replication, "arrivals"))
     rng_cli = random.Random(stable_seed(seed_base, demand_ratio, replication, "clinical"))
@@ -202,10 +207,7 @@ def generate_patient_stream(
         wait_low, wait_high = prof["max_wait_range"]
         alpha_det = float(prof["alpha_det"])
 
-        # Média da gravidade (1 - P_out) para normalização exata de E[LOS_i] = mean_los_pool (Resolve M2!)
         mean_severity = 1.0 - 0.5 * (p_out_low + p_out_high)
-
-        # Taxa de chegada exata por Little's Law: rho_efetivo == demand_ratio
         arrival_rate = (demand_ratio * cap) / mean_los_pool
         t = rng_arr.expovariate(arrival_rate)
 
@@ -215,7 +217,9 @@ def generate_patient_stream(
             p_in_0 = p_out + (1.0 - p_out) * gain_fraction
             max_wait = rng_cli.uniform(wait_low, wait_high)
 
-            # E[LOS_i] cresce com a gravidade (1 - p_out), mas normalizado para que E[E[LOS_i]] == mean_los_pool
+            # E[LOS_i] centrado exatamente em mean_los_pool.
+            # Como |severity - mean_severity| <= 0.20, para |beta| <= 2.4 temos 1 + beta*(...) >= 0.52 > 0.35,
+            # logo o piso de segurança 0.35 nunca é ativado e E[E[LOS_i]] == mean_los_pool de forma exata.
             severity = 1.0 - p_out
             raw_mult = 1.0 + sev_los_beta * (severity - mean_severity)
             mult = max(0.35, raw_mult)
@@ -225,7 +229,6 @@ def generate_patient_stream(
             los = rng_los.lognormvariate(mu_i, sigma_los)
             outcome_u = rng_out.random()
 
-            # Geração de atributos observados com ruído para todas as variáveis clínicas (Resolve M6!)
             if sigma_noise > 0.0:
                 obs_p_out = min(0.95, max(0.01, p_out + rng_noi.gauss(0.0, sigma_noise)))
                 obs_p_in_0 = min(0.99, max(obs_p_out, p_in_0 + rng_noi.gauss(0.0, sigma_noise)))
@@ -283,8 +286,9 @@ def simulate_policy(
     horizon_days: float = 75.0,
     allow_overflow: bool = True,
     with_noise: bool = False,
+    reneging_survival_factor: float = 1.0,
 ) -> dict:
-    """Executa a simulação de eventos discretos sem truncar pacientes na fila em T (Resolve M7 e M8)."""
+    """Executa a simulação de eventos discretos até a drenagem completa da coorte."""
     patients_by_id = {p.id: p for p in patients}
     queues: dict[str, list[DynamicPatient]] = {t: [] for t in TYPES}
     occupied_beds: dict[str, int] = {t: 0 for t in TYPES}
@@ -336,7 +340,9 @@ def simulate_policy(
             return candidate_queue.pop(0)
         candidate_queue.sort(
             key=lambda p: (
-                -priority_score(p, policy, now, use_observed=with_noise),
+                -priority_score(
+                    p, policy, now, use_observed=with_noise, reneging_survival_factor=reneging_survival_factor
+                ),
                 p.arrival_time,
                 p.id,
             )
@@ -344,15 +350,11 @@ def simulate_policy(
         return candidate_queue.pop(0)
 
     def try_admit_for_pool(pool: str, now: float):
-        """Aloca leitos livres no pool com prioridade primária para a fila nativa e overflow secundário (M8)."""
         cap = capacities.get(pool, 0)
         while occupied_beds[pool] < cap:
             chosen = None
-            # Regra hierárquica estrita (M8):
-            # 1. Atende sempre os pacientes da própria especialidade primeiro
             if queues[pool]:
                 chosen = select_best_patient(queues[pool], now)
-            # 2. Somente se a fila nativa estiver vazia, aceita transbordamento compatível (Adulto <-> UCO)
             elif allow_overflow and pool == "coronary" and queues["adult"]:
                 chosen = select_best_patient(queues["adult"], now)
             elif allow_overflow and pool == "adult" and queues["coronary"]:
@@ -379,7 +381,6 @@ def simulate_policy(
                 ),
             )
 
-    # Processa todos os eventos até o esvaziamento completo das filas da coorte (Resolve M7!)
     while event_queue:
         ev = heapq.heappop(event_queue)
         update_occupancy_area(ev.time)
@@ -410,7 +411,6 @@ def simulate_policy(
 
     update_occupancy_area(eval_end)
 
-    # Coorte de avaliação: todos os pacientes que chegaram em [warmup_days, horizon_days)
     eval_patients = [p for p in patients if eval_start <= p.arrival_time < eval_end]
     total_eval = len(eval_patients)
 
@@ -420,14 +420,18 @@ def simulate_policy(
     n_admitted = len(eval_admitted)
     n_reneged = len(eval_reneged)
 
-    # Sobrevivência calculada sempre com os parâmetros reais (verdade-terreno) do paciente
+    # Sobrevida esperada e realizada considerando fator de penalidade no abandono (theta_ren - P3)
     expected_survivors = sum(
-        p.p_in_at(admission_times[p.id], use_observed=False) if p.id in admitted_patients else p.p_out
+        p.p_in_at(admission_times[p.id], use_observed=False)
+        if p.id in admitted_patients
+        else (reneging_survival_factor * p.p_out)
         for p in eval_patients
     )
     realized_survivors = sum(
         p.outcome_uniform < (
-            p.p_in_at(admission_times[p.id], use_observed=False) if p.id in admitted_patients else p.p_out
+            p.p_in_at(admission_times[p.id], use_observed=False)
+            if p.id in admitted_patients
+            else (reneging_survival_factor * p.p_out)
         )
         for p in eval_patients
     )
@@ -439,9 +443,11 @@ def simulate_policy(
     mean_wait_admitted_h = statistics.mean(wait_admitted_list) * 24.0 if wait_admitted_list else 0.0
     mean_wait_reneged_h = statistics.mean(wait_reneged_list) * 24.0 if wait_reneged_list else 0.0
     mean_wait_all_h = statistics.mean(wait_all_list) * 24.0 if wait_all_list else 0.0
-
-    # LOS médio dos pacientes admitidos vs todos os pacientes
     mean_los_admitted = statistics.mean([p.los for p in eval_admitted]) if eval_admitted else 0.0
+
+    # Mortalidade pós-admissão global e por pool (para validação direta contra AMIB/Epimed - P1)
+    admitted_surv_probs = [p.p_in_at(admission_times[p.id], use_observed=False) for p in eval_admitted]
+    admitted_mortality_rate = 1.0 - statistics.mean(admitted_surv_probs) if admitted_surv_probs else 0.0
 
     total_capacity = sum(capacities.values())
     occupancy_rates = {}
@@ -461,11 +467,13 @@ def simulate_policy(
         sub_pts = [p for p in eval_patients if p.bed_type == t]
         sub_adm = [p for p in sub_pts if p.id in admitted_patients]
         sub_ren = [p for p in sub_pts if p.id in timeout_patients]
+        sub_adm_surv = [p.p_in_at(admission_times[p.id], use_observed=False) for p in sub_adm]
         pool_metrics[f"patients_{t}"] = len(sub_pts)
         pool_metrics[f"admitted_{t}"] = len(sub_adm)
         pool_metrics[f"reneged_{t}"] = len(sub_ren)
         pool_metrics[f"admission_rate_{t}"] = len(sub_adm) / len(sub_pts) if sub_pts else 0.0
         pool_metrics[f"occupancy_{t}"] = occupancy_rates[t]
+        pool_metrics[f"admitted_mortality_{t}"] = (1.0 - statistics.mean(sub_adm_surv)) if sub_adm_surv else 0.0
 
     return {
         "policy": policy,
@@ -478,6 +486,7 @@ def simulate_policy(
         "realized_survivors": realized_survivors,
         "expected_survival_rate": expected_survivors / total_eval if total_eval else 0.0,
         "realized_survival_rate": realized_survivors / total_eval if total_eval else 0.0,
+        "admitted_mortality_rate": admitted_mortality_rate,
         "mean_wait_admitted_hours": mean_wait_admitted_h,
         "mean_wait_reneged_hours": mean_wait_reneged_h,
         "mean_wait_all_hours": mean_wait_all_h,
@@ -487,19 +496,27 @@ def simulate_policy(
     }
 
 
-def solve_offline_milp_bound(
+def solve_offline_lp_bound(
     patients: list[DynamicPatient],
     capacities: dict[str, int],
     warmup_days: float = 15.0,
     horizon_days: float = 75.0,
     allow_overflow: bool = True,
     dt: float = 0.5,
+    use_expected_los: bool = False,
+    reneging_survival_factor: float = 1.0,
 ) -> dict:
-    """Resolve o MILP Clarividente (Hindsight Upper Bound - M5) indexado no tempo via HiGHS."""
+    """Resolve o Limitante Superior LP Indexado no Tempo via HiGHS (Resolve P2a, P2b, P2c):
+    - Se use_expected_los=False: Limitante LP Clarividente (Hindsight LP Bound, usa LOS_i realizado).
+    - Se use_expected_los=True: Limitante LP Não-Antecipativo em Duração (Duration-Expectation LP Bound,
+      usa E[LOS_i], eliminando o cherry-picking de realizações curtas conforme Brown, Smith & Sun, 2010).
+    - Inclui apenas os pacientes de I_eval = [warmup_days, horizon_days) sem restrição de fronteira do warm-up,
+      o que constitui uma relaxação universalmente válida (independente da política) para qualquer estado em T_warm.
+    - S_max é calculado dinamicamente para cobrir 100% da drenagem pós-horizonte.
+    """
     eval_patients = [p for p in patients if warmup_days <= p.arrival_time < horizon_days]
-    base_survival = sum(p.p_out for p in eval_patients)
+    base_survival = sum(reneging_survival_factor * p.p_out for p in eval_patients)
 
-    # Agrupamento de pools (Adulto + UCO acoplados se allow_overflow=True; Pediátrico e Neonatal separados)
     if allow_overflow:
         pool_groups = [
             (["adult", "coronary"], capacities.get("adult", 0) + capacities.get("coronary", 0)),
@@ -510,28 +527,34 @@ def solve_offline_milp_bound(
         pool_groups = [([t], capacities.get(t, 0)) for t in TYPES]
 
     total_max_gain = 0.0
-    total_admitted_ub = 0
-    max_slot = int(math.ceil((horizon_days + 45.0) / dt)) + 2
+    total_admitted_ub = 0.0
+
+    # S_max cobre toda a drenagem de qualquer paciente de I_eval (P2b)
+    max_possible_end = max(
+        (p.arrival_time + p.max_wait + (p.expected_los if use_expected_los else p.los) for p in eval_patients),
+        default=horizon_days + 30.0,
+    )
+    max_slot = int(math.ceil(max_possible_end / dt)) + 4
 
     for btypes, cap in pool_groups:
         if cap <= 0:
             continue
-        # Inclui todos os pacientes que chegaram desde t=0 para respeitar a ocupação na fronteira warmup_days
-        group_pts = [p for p in patients if p.bed_type in btypes]
+        # Considera apenas os pacientes de I_eval (relaxando a ocupação residual do warm-up em t = warmup_days,
+        # garantindo um Upper Bound universalmente válido para todas as políticas - P2a!)
+        group_pts = [p for p in eval_patients if p.bed_type in btypes]
         if not group_pts:
             continue
 
         vars_c = []
-        vars_is_eval = []
         patient_var_lists = []
         slot_loads: list[list[int]] = [[] for _ in range(max_slot)]
         var_idx = 0
 
         for p in group_pts:
-            is_eval = warmup_days <= p.arrival_time < horizon_days
             arr_slot = int(math.floor(p.arrival_time / dt))
             max_wait_slots = max(1, int(math.ceil(p.max_wait / dt)))
-            los_slots = max(1, int(math.floor(p.los / dt)))
+            stay_val = p.expected_los if use_expected_los else p.los
+            los_slots = max(1, int(math.floor(stay_val / dt)))
 
             p_vars = []
             for w_step in range(max_wait_slots + 1):
@@ -539,15 +562,12 @@ def solve_offline_milp_bound(
                 s_adm = arr_slot + w_step
                 if s_adm >= max_slot:
                     break
-                # Se paciente é da janela de avaliação, contribui para o objetivo;
-                # se for do warm-up, pequeno incentivo positivo para ocupar leitos realisticamente
-                if is_eval:
-                    gain = p.marginal_gain_at(p.arrival_time + wait_days, use_observed=False)
-                else:
-                    gain = 1e-4 * p.marginal_gain_at(p.arrival_time + wait_days, use_observed=False)
-
+                gain = p.marginal_gain_at(
+                    p.arrival_time + wait_days,
+                    use_observed=False,
+                    reneging_survival_factor=reneging_survival_factor,
+                )
                 vars_c.append(-gain)
-                vars_is_eval.append(1 if is_eval else 0)
                 p_vars.append(var_idx)
 
                 s_end = min(max_slot, s_adm + los_slots)
@@ -585,7 +605,6 @@ def solve_offline_milp_bound(
 
         A = csc_matrix((vals, (rows, cols)), shape=(r_idx, var_idx))
         c = np.array(vars_c, dtype=float)
-        # Relaxação LP do MILP indexado no tempo (fornece um Upper Bound válido e estrito para o ótimo!)
         res = milp(
             c=c,
             integrality=np.zeros(var_idx),
@@ -595,18 +614,22 @@ def solve_offline_milp_bound(
         if res.success and res.x is not None:
             sol = res.x
             for v_i, x_val in enumerate(sol):
-                if vars_is_eval[v_i] and x_val > 1e-6:
+                if x_val > 1e-6:
                     total_max_gain += (-vars_c[v_i]) * x_val
                     total_admitted_ub += x_val
 
     ub_survivors = base_survival + total_max_gain
     return {
-        "policy": "OFFLINE_UB",
+        "policy": "OFFLINE_LP_EXP" if use_expected_los else "OFFLINE_LP_REAL",
         "total_patients": len(eval_patients),
         "admitted": total_admitted_ub,
         "expected_survivors": ub_survivors,
         "expected_survival_rate": ub_survivors / len(eval_patients) if eval_patients else 0.0,
     }
+
+
+# Mantém alias para compatibilidade com testes unitários
+solve_offline_milp_bound = solve_offline_lp_bound
 
 
 def interval(values: list[float]) -> dict:
@@ -631,6 +654,23 @@ def student_t_pvalue(t_stat: float, df: int) -> float:
     return math.erfc(abs(t_stat) / math.sqrt(2.0))
 
 
+def apply_holm_bonferroni(test_dicts: list[dict], p_key: str = "p_raw") -> list[dict]:
+    """Aplica o ajuste de Holm-Bonferroni a uma família de testes."""
+    indexed = list(enumerate(test_dicts))
+    indexed.sort(key=lambda x: x[1][p_key])
+    m = len(indexed)
+    running_max = 0.0
+    adjusted = [0.0] * m
+    for rank, (orig_idx, item) in enumerate(indexed):
+        p_adj = min(1.0, item[p_key] * (m - rank))
+        running_max = max(running_max, p_adj)
+        adjusted[orig_idx] = running_max
+    out = []
+    for idx, item in enumerate(test_dicts):
+        out.append({**item, "p_holm": adjusted[idx], "significant_005": adjusted[idx] < 0.05})
+    return out
+
+
 def run_dynamic_experiment(config: dict, destination: str | Path):
     dest = Path(destination)
     dest.mkdir(parents=True, exist_ok=True)
@@ -649,8 +689,8 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
     compute_ub = bool(config.get("compute_offline_ub", True))
 
     print(
-        f"Iniciando simulação dinâmica calibrada: {len(demand_ratios)} demandas x {replications} "
-        f"replicações x {len(policies)} políticas (Janela {horizon_days - warmup_days}d pós {warmup_days}d warm-up)..."
+        f"Iniciando simulação dinâmica: {len(demand_ratios)} demandas x {replications} "
+        f"replicações x {len(policies)} políticas..."
     )
 
     for d in demand_ratios:
@@ -674,30 +714,37 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
                 rep_results[pol] = res
 
             if compute_ub:
-                ub_res = solve_offline_milp_bound(
+                ub_real = solve_offline_lp_bound(
                     patients=patients,
                     capacities=capacities,
                     warmup_days=warmup_days,
                     horizon_days=horizon_days,
                     allow_overflow=allow_overflow,
+                    use_expected_los=False,
                 )
-                ub_res["demand_ratio"] = d
-                ub_res["replication"] = rep
-                ub_res["cmu_mgs_survivors"] = rep_results["CMU_MGS"]["expected_survivors"]
-                ub_res["mgs_survivors"] = rep_results["MGS"]["expected_survivors"]
-                ub_res["fcfs_survivors"] = rep_results["FCFS"]["expected_survivors"]
-                ub_res["cmu_optimality_gap_pct"] = (
-                    (ub_res["expected_survivors"] - rep_results["CMU_MGS"]["expected_survivors"])
-                    / ub_res["expected_survivors"]
-                    * 100.0
+                ub_exp = solve_offline_lp_bound(
+                    patients=patients,
+                    capacities=capacities,
+                    warmup_days=warmup_days,
+                    horizon_days=horizon_days,
+                    allow_overflow=allow_overflow,
+                    use_expected_los=True,
                 )
-                # Fração do ganho máximo possível sobre o FCFS capturada pelo CMU-MGS
-                max_gain_over_fcfs = ub_res["expected_survivors"] - rep_results["FCFS"]["expected_survivors"]
-                cmu_gain_over_fcfs = rep_results["CMU_MGS"]["expected_survivors"] - rep_results["FCFS"]["expected_survivors"]
-                ub_res["cmu_captured_gain_pct"] = (
-                    (cmu_gain_over_fcfs / max_gain_over_fcfs * 100.0) if max_gain_over_fcfs > 0.1 else 100.0
-                )
-                ub_rows.append(ub_res)
+                cmu_surv = rep_results["CMU_MGS"]["expected_survivors"]
+                ub_rows.append({
+                    "demand_ratio": d,
+                    "replication": rep,
+                    "total_patients": ub_real["total_patients"],
+                    "fcfs_survivors": rep_results["FCFS"]["expected_survivors"],
+                    "mgs_survivors": rep_results["MGS"]["expected_survivors"],
+                    "cmu_mgs_survivors": cmu_surv,
+                    "ub_exp_los_admitted": ub_exp["admitted"],
+                    "ub_exp_los_survivors": ub_exp["expected_survivors"],
+                    "ub_real_los_admitted": ub_real["admitted"],
+                    "ub_real_los_survivors": ub_real["expected_survivors"],
+                    "gap_vs_exp_lp_pct": (ub_exp["expected_survivors"] - cmu_surv) / ub_exp["expected_survivors"] * 100.0,
+                    "gap_vs_real_lp_pct": (ub_real["expected_survivors"] - cmu_surv) / ub_real["expected_survivors"] * 100.0,
+                })
 
             fcfs_exp = rep_results["FCFS"]["expected_survivors"]
             fcfs_real = rep_results["FCFS"]["realized_survivors"]
@@ -716,10 +763,6 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
                     "diff_realized_survivors": rep_results[pol]["realized_survivors"] - fcfs_real,
                     "diff_wait_admitted_hours": rep_results[pol]["mean_wait_admitted_hours"] - fcfs_wait_adm,
                     "diff_wait_all_hours": rep_results[pol]["mean_wait_all_hours"] - fcfs_wait_all,
-                    "diff_cmu_vs_mgs": (
-                        rep_results["CMU_MGS"]["expected_survivors"] - rep_results["MGS"]["expected_survivors"]
-                        if pol == "CMU_MGS" else 0.0
-                    ),
                 })
 
     with (dest / "runs.csv").open("w", newline="") as f:
@@ -750,6 +793,7 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
         "reneging_rate",
         "expected_survival_rate",
         "realized_survival_rate",
+        "admitted_mortality_rate",
         "mean_wait_admitted_hours",
         "mean_wait_reneged_hours",
         "mean_wait_all_hours",
@@ -767,6 +811,10 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
         "patients_coronary",
         "patients_pediatric",
         "patients_neonatal",
+        "admitted_mortality_adult",
+        "admitted_mortality_coronary",
+        "admitted_mortality_pediatric",
+        "admitted_mortality_neonatal",
     )
     for d in demand_ratios:
         for pol in policies:
@@ -787,8 +835,6 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
         writer.writeheader()
         writer.writerows(summary_rows)
 
-    # Tabela pareada com Holm-Bonferroni
-    paired_summary = []
     raw_tests = []
     for d in demand_ratios:
         for pol in policies:
@@ -818,17 +864,7 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
                 "relative_pct": pct_gain,
             })
 
-    raw_tests.sort(key=lambda x: x["p_raw"])
-    m_tests = len(raw_tests)
-    for rank, test in enumerate(raw_tests):
-        adjusted_p = min(1.0, test["p_raw"] * (m_tests - rank))
-        paired_summary.append({
-            **test,
-            "p_holm": adjusted_p,
-            "significant_005": adjusted_p < 0.05,
-        })
-    paired_summary.sort(key=lambda x: (x["demand_ratio"], x["policy"]))
-
+    paired_summary = apply_holm_bonferroni(raw_tests, "p_raw")
     with (dest / "paired_statistical_summary.csv").open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(paired_summary[0].keys()))
         writer.writeheader()
@@ -849,20 +885,21 @@ def run_dynamic_experiment(config: dict, destination: str | Path):
 
 
 def run_comprehensive_extensions(config: dict, destination: str | Path):
-    """Executa todos os experimentos adicionais exigidos na revisão:
-    1. Ruído em P_in, P_out e E[LOS] para todas as políticas com 100 replicações e Holm (M6)
-    2. Varredura paramétrica (Mapa de calor beta x alpha) demonstrando onde CMU-MGS supera MGS (M3)
-    3. Ablação do acoplamento de overflow Adulto <-> UCO (M8)
+    """Executa todos os experimentos adicionais exigidos na 3ª rodada:
+    1. Ruído em P_in, P_out e E[LOS] (100 replicações + Holm)
+    2. Grade Beta x Alpha incluindo beta < 0 (-0.6, 0.0, 0.6, 1.2, 1.8, 2.4) com ajuste de Holm (P5 e Menor 4)
+    3. Ablação de compartilhamento Adulto <-> UCO com ajuste de Holm (Menor 4)
+    4. Sensibilidade ao payoff de quem desiste (theta_ren in {1.0, 0.5, 0.0} - P3)
     """
     dest = Path(destination)
     dest.mkdir(parents=True, exist_ok=True)
     replications = int(config.get("replications", 100))
     d = 1.6
 
-    # --- 1. Experimento de Ruído Clínico Completo (M6: 100 replicações, todas as políticas) ---
+    # --- 1. Experimento de Ruído Clínico Completo (100 replicações) ---
     noise_levels = [0.0, 0.05, 0.10, 0.20]
     noise_rows = []
-    print(f"[M6] Executando análise de ruído em P_in, P_out e E[LOS] ({replications} replicações)...")
+    print(f"[Noise] Executando análise de ruído em P_in, P_out e E[LOS] ({replications} replicações)...")
     for sigma in noise_levels:
         for rep in range(replications):
             patients = generate_patient_stream(config, d, rep, sigma_noise=sigma)
@@ -895,12 +932,12 @@ def run_comprehensive_extensions(config: dict, destination: str | Path):
         writer.writeheader()
         writer.writerows(noise_rows)
 
-    # --- 2. Varredura Paramétrica Beta x Alpha (M3: Tensão Benefício vs Leito-Dia) ---
-    betas = [0.0, 0.6, 1.2, 1.8, 2.4]
+    # --- 2. Varredura Paramétrica Beta x Alpha incluindo Beta = -0.6 (P5: Mortalidade precoce vs crônica) ---
+    betas = [-0.6, 0.0, 0.6, 1.2, 1.8, 2.4]
     alphas = [0.05, 0.18, 0.35, 0.50]
-    grid_rows = []
+    raw_grid = []
     grid_reps = 50
-    print(f"[M3] Executando grade de sensibilidade beta x alpha ({len(betas)}x{len(alphas)} x {grid_reps} reps)...")
+    print(f"[P5] Executando grade de sensibilidade beta x alpha ({len(betas)}x{len(alphas)} x {grid_reps} reps)...")
     for beta in betas:
         for alpha in alphas:
             cfg_grid = dict(config)
@@ -923,26 +960,28 @@ def run_comprehensive_extensions(config: dict, destination: str | Path):
 
             st_cm = interval(diffs_cmu_mgs)
             t_cm = st_cm["mean"] / st_cm["standard_error"] if st_cm["standard_error"] > 0 else 0.0
-            grid_rows.append({
+            p_raw = student_t_pvalue(t_cm, grid_reps - 1) if beta != 0.0 else 1.0
+            raw_grid.append({
                 "beta": beta,
                 "alpha": alpha,
                 "cmu_vs_mgs_mean": st_cm["mean"],
                 "cmu_vs_mgs_se": st_cm["standard_error"],
                 "cmu_vs_mgs_t": t_cm,
-                "cmu_vs_mgs_p": student_t_pvalue(t_cm, grid_reps - 1),
+                "p_raw": p_raw,
                 "cmu_vs_fcfs_mean": statistics.mean(diffs_cmu_fcfs),
                 "mgs_vs_fcfs_mean": statistics.mean(diffs_mgs_fcfs),
                 "austere_vs_fcfs_mean": statistics.mean(diffs_aust_fcfs),
             })
 
+    grid_rows = apply_holm_bonferroni(raw_grid, "p_raw")
     with (dest / "sensitivity_grid_beta_alpha.csv").open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(grid_rows[0].keys()))
         writer.writeheader()
         writer.writerows(grid_rows)
 
-    # --- 3. Ablação de Compartilhamento Adulto <-> UCO (M8) ---
+    # --- 3. Ablação de Compartilhamento Adulto <-> UCO (100 replicações) ---
     ablation_rows = []
-    print(f"[M8] Executando ablação de compartilhamento Adulto <-> UCO ({replications} replicações)...")
+    print(f"[Ablation] Executando ablação de compartilhamento Adulto <-> UCO ({replications} replicações)...")
     for d_abl in [0.7, 1.0, 1.3, 1.6]:
         for rep in range(replications):
             pts = generate_patient_stream(config, d_abl, rep, sigma_noise=0.0)
@@ -967,7 +1006,44 @@ def run_comprehensive_extensions(config: dict, destination: str | Path):
         writer.writeheader()
         writer.writerows(ablation_rows)
 
-    print(f"Todos os experimentos estendidos concluídos e salvos em {dest}")
+    # --- 4. Sensibilidade ao Payoff de Quem Desiste (theta_ren in {1.0, 0.5, 0.0} - P3) ---
+    reneging_factors = [1.0, 0.5, 0.0]
+    ren_payoff_rows = []
+    print(f"[P3] Executando sensibilidade ao payoff de quem desiste (theta_ren in {reneging_factors})...")
+    for theta in reneging_factors:
+        for rep in range(replications):
+            pts = generate_patient_stream(config, d, rep, sigma_noise=0.0)
+            rep_res = {}
+            for pol in POLICIES:
+                res = simulate_policy(
+                    patients=pts,
+                    capacities=config["capacities"],
+                    policy=pol,
+                    warmup_days=15.0,
+                    horizon_days=75.0,
+                    allow_overflow=True,
+                    with_noise=False,
+                    reneging_survival_factor=theta,
+                )
+                rep_res[pol] = res
+            fcfs_s = rep_res["FCFS"]["expected_survivors"]
+            for pol in POLICIES:
+                ren_payoff_rows.append({
+                    "theta_ren": theta,
+                    "replication": rep,
+                    "policy": pol,
+                    "expected_survivors": rep_res[pol]["expected_survivors"],
+                    "diff_vs_fcfs": rep_res[pol]["expected_survivors"] - fcfs_s,
+                    "admitted": rep_res[pol]["admitted"],
+                    "reneging_rate": rep_res[pol]["reneging_rate"],
+                })
+
+    with (dest / "sensitivity_reneging_payoff.csv").open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(ren_payoff_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(ren_payoff_rows)
+
+    print(f"Todos os experimentos da 3ª rodada concluídos e salvos em {dest}")
 
 
 def main():
