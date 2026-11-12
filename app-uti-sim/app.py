@@ -24,15 +24,16 @@ st.set_page_config(
     }
 )
 
-# --- Autenticação ---
+# --- Optional authentication (enable with UTI_SIM_PASSWORD) ---
 def require_auth():
-    pw_expected = "sistemaleitosuti01234"
-    print(pw_expected)
+    pw_expected = os.environ.get("UTI_SIM_PASSWORD")
+    if not pw_expected:
+        return
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if not st.session_state.authenticated:
         with st.sidebar:
-            st.subheader("🔐 Autenticação")
+            st.subheader("Autenticação")
             pwd = st.text_input("Senha", type="password", key="__auth_pwd__")
             if st.button("Entrar", key="__auth_login_btn__"):
                 if pwd == pw_expected:

@@ -1,0 +1,27 @@
+{
+  "title": "alocacao-uti-web: simulation code, configuration files and replication outputs for multi-unit ICU admission rules",
+  "upload_type": "software",
+  "description": "Continuous-time discrete-event simulation and retrospective time-indexed linear programming benchmarks for multi-type ICU bed allocation under resource scarcity, calibrated with DATASUS/CNES bed capacities (HU-UFMA) and AMIB/Epimed Brazilian ICU registry targets. In the code, the CMU-DL rule is labeled AUSTERE.",
+  "creators": [
+    {
+      "name": "Gomes, Carlos Eduardo Veras",
+      "affiliation": "Federal University of Maranhão (UFMA)"
+    },
+    {
+      "name": "Carvalho, João Augusto Ferreira Nunes de",
+      "affiliation": "Federal University of Maranhão (UFMA)"
+    },
+    {
+      "name": "Clímaco, Francisco Glaubos Nunes",
+      "affiliation": "Federal University of Maranhão (UFMA)",
+      "orcid": "0000-0002-1357-1318"
+    }
+  ],
+  "keywords": [
+    "Healthcare operations research",
+    "Intensive care units",
+    "Discrete-event simulation",
+    "Triage policies",
+    "Linear programming"
+  ]
+}

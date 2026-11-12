@@ -1,0 +1,52 @@
+{
+  "estabelecimento": "HOSPITAL UNIVERSITARIO DA UFMA (HU-UFMA)",
+  "cnes": "2726653",
+  "municipio": "São Luís - MA",
+  "competencia": "202412",
+  "fonte": "DATASUS / CNES - Módulo Hospitalar",
+  "url": "https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VComp=202412&VUnidade=2111302726653",
+  "leitos_criticos": {
+    "coronary_uco": {
+      "descricao": "86-UCO TIPO III",
+      "existentes": 10,
+      "sus": 10
+    },
+    "pediatric": {
+      "descricao": "79-UTI-PED TIPO III",
+      "existentes": 10,
+      "sus": 10
+    },
+    "neonatal": {
+      "descricao": "81-UTI NEONATAL - TIPO II",
+      "existentes": 20,
+      "sus": 20
+    },
+    "adult": {
+      "descricao": "76-UTI-A TIPO III",
+      "existentes": 15,
+      "sus": 15
+    }
+  },
+  "capacidade_uti_modelo": {
+    "adult": 15,
+    "pediatric": 10,
+    "neonatal": 20
+  },
+  "total_leitos_uti": 45,
+  "total_com_uco": 55,
+  "comparacao_artigo_historico": {
+    "artigo_rairo_77_leitos": {
+      "neonatal": 35,
+      "pediatric": 16,
+      "adult": 26,
+      "total": 77
+    },
+    "cnes_atual_45_leitos": {
+      "neonatal": 20,
+      "pediatric": 10,
+      "adult": 15,
+      "total": 45
+    },
+    "nota": "O artigo cita 77 leitos de UTI no HU-UFMA durante o pico da pandemia de COVID-19 (leitos de contingência/COVID). A capacidade operacional permanente do CNES (12/2024) registra 45 leitos de UTI SUS (20 neonatal, 10 pediátrico, 15 adulto), além de 10 leitos de UCO."
+  }
+}

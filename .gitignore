@@ -1,3 +1,5 @@
 *.pyc
 __pycache__/
+.DS_Store
 avaliacao-desempenho-uti
+doc/artigo-elsevier/elsarticle/doc/

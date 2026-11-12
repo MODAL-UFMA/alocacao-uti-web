@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+type: software
+title: "alocacao-uti-web: simulation code, configuration files and replication outputs for multi-unit ICU admission rules"
+authors:
+  - family-names: Gomes
+    given-names: Carlos Eduardo Veras
+    affiliation: "Federal University of Maranhão (UFMA)"
+  - family-names: Carvalho
+    given-names: João Augusto Ferreira Nunes de
+    affiliation: "Federal University of Maranhão (UFMA)"
+  - family-names: Clímaco
+    given-names: Francisco Glaubos Nunes
+    affiliation: "Federal University of Maranhão (UFMA)"
+    orcid: "https://orcid.org/0000-0002-1357-1318"
+repository-code: "https://github.com/MODAL-UFMA/alocacao-uti-web"
+abstract: >-
+  Continuous-time discrete-event simulation and retrospective
+  time-indexed linear programming benchmarks for multi-type ICU
+  bed allocation under resource scarcity, calibrated with
+  DATASUS/CNES bed capacities (HU-UFMA) and AMIB/Epimed
+  Brazilian ICU registry targets.
+keywords:
+  - healthcare operations research
+  - intensive care units
+  - discrete-event simulation
+  - triage policies
+  - linear programming
+year: 2026
