@@ -23,5 +23,6 @@
     "Discrete-event simulation",
     "Triage policies",
     "Linear programming"
-  ]
+  ],
+  "license": "MIT"
 }
